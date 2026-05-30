@@ -1,0 +1,35 @@
+{
+    "name": "ecko_media_mobile",
+    "short_name": "ecko_media",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#702088",
+    "theme_color": "#702088",
+    "description": "Ecko Media - Official mobile app. Listen live and stay connected.",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}
