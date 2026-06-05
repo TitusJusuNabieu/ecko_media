@@ -1,0 +1,6 @@
+USE ecko_media;
+
+-- Sample Job Listings seed
+INSERT INTO job_listings (title, department, location, employment_type, description, requirements, responsibilities, benefits, salary, application_email, deadline, is_active) VALUES
+('Senior News Reporter', 'Newsroom', 'Bo, Sierra Leone', 'Full-time', 'Lead field and desk reporting on governance, business, and community-impact stories for radio and digital platforms.', 'Minimum 3 years reporting experience\nStrong writing and live reporting skills', 'Pitch and produce enterprise stories weekly\nFile clean scripts for on-air bulletins', 'Health support package\nContinuous training opportunities\nData stipend for field reporting', 'Le 9M - 13M / month', 'careers@eckomedia.sl', '2026-07-31', TRUE),
+('Radio Producer & Presenter', 'Broadcast', 'Bo, Sierra Leone', 'Full-time', 'Produce and host daily segments that blend current affairs, audience engagement, and community voices.', 'On-air presentation confidence\nStrong show-planning and scripting ability\nBasic audio editing proficiency', 'Plan daily rundowns and segment flow\nHost live and pre-recorded shows', 'Shift allowance\nProfessional voice coaching', 'Le 7M - 10M / month', 'careers@eckomedia.sl', '2026-08-15', TRUE);
