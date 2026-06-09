@@ -1,0 +1,274 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  admin
+  editor
+  writer
+  moderator
+}
+
+enum ArticleStatus {
+  draft
+  published
+  archived
+}
+
+enum SongRequestStatus {
+  pending
+  approved
+  played
+  rejected
+}
+
+enum ShoutoutStatus {
+  pending
+  approved
+  read
+  rejected
+}
+
+enum ContactMessageStatus {
+  unread
+  read
+  replied
+}
+
+enum DonationStatus {
+  pending
+  completed
+  failed
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  name         String
+  passwordHash String    @map("password_hash")
+  role         UserRole  @default(editor)
+  isActive     Boolean   @default(true) @map("is_active")
+  avatar       String?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  articles     Article[]
+
+  @@map("users")
+}
+
+model Station {
+  id            Int       @id @default(autoincrement())
+  name          String
+  slug          String    @unique
+  description   String?   @db.Text
+  tagline       String?
+  streamUrl     String    @map("stream_url")
+  streamUrlHigh String?   @map("stream_url_high")
+  streamUrlLow  String?   @map("stream_url_low")
+  logoUrl       String?   @map("logo_url")
+  genre         String
+  subGenres     Json      @default("[]") @map("sub_genres")
+  language      String    @default("English")
+  country       String?   @default("Sierra Leone")
+  city          String?
+  frequency     String?
+  listenerCount Int       @default(0) @map("listener_count")
+  socialMedia   Json      @default("{}") @map("social_media")
+  isActive      Boolean   @default(true) @map("is_active")
+  isFeatured    Boolean   @default(false) @map("is_featured")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  programs     Program[]
+  songRequests SongRequest[]
+  shoutouts    Shoutout[]
+
+  @@map("stations")
+}
+
+model Program {
+  id           Int      @id @default(autoincrement())
+  stationId    Int      @map("station_id")
+  station      Station  @relation(fields: [stationId], references: [id])
+  name         String
+  slug         String   @unique
+  description  String?  @db.Text
+  hostName     String   @map("host_name")
+  hostBio      String?  @db.Text @map("host_bio")
+  hostImageUrl String?  @map("host_image_url")
+  genre        String?
+  schedule     Json     @default("{}")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("programs")
+}
+
+model ArticleCategory {
+  id          Int       @id @default(autoincrement())
+  name        String
+  slug        String    @unique
+  description String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  articles    Article[]
+
+  @@map("article_categories")
+}
+
+model Article {
+  id            Int              @id @default(autoincrement())
+  categoryId    Int?             @map("category_id")
+  category      ArticleCategory? @relation(fields: [categoryId], references: [id])
+  title         String
+  slug          String           @unique
+  excerpt       String?          @db.Text
+  content       String           @db.Text
+  featuredImage String?          @map("featured_image")
+  authorId      Int?             @map("author_id")
+  author        User?            @relation(fields: [authorId], references: [id])
+  status        ArticleStatus    @default(draft)
+  views         Int              @default(0)
+  tags          Json             @default("[]")
+  isFeatured    Boolean          @default(false) @map("is_featured")
+  publishedAt   DateTime?        @map("published_at")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+
+  @@map("articles")
+}
+
+model Sermon {
+  id           Int       @id @default(autoincrement())
+  title        String
+  preacher     String
+  description  String?   @db.Text
+  audioUrl     String?   @map("audio_url")
+  thumbnailUrl String?   @map("thumbnail_url")
+  duration     String?
+  isActive     Boolean   @default(true) @map("is_active")
+  publishedAt  DateTime? @map("published_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@map("sermons")
+}
+
+model SongRequest {
+  id             Int               @id @default(autoincrement())
+  stationId      Int?              @map("station_id")
+  station        Station?          @relation(fields: [stationId], references: [id])
+  requesterName  String            @map("requester_name")
+  requesterEmail String?           @map("requester_email")
+  songTitle      String            @map("song_title")
+  artistName     String            @map("artist_name")
+  message        String?
+  status         SongRequestStatus @default(pending)
+  createdAt      DateTime          @default(now()) @map("created_at")
+
+  @@map("song_requests")
+}
+
+model Shoutout {
+  id            Int            @id @default(autoincrement())
+  stationId     Int?           @map("station_id")
+  station       Station?       @relation(fields: [stationId], references: [id])
+  senderName    String         @map("sender_name")
+  recipientName String         @map("recipient_name")
+  message       String         @db.Text
+  status        ShoutoutStatus @default(pending)
+  readOnAir     Boolean        @default(false) @map("read_on_air")
+  createdAt     DateTime       @default(now()) @map("created_at")
+
+  @@map("shoutouts")
+}
+
+model ContactMessage {
+  id        Int                  @id @default(autoincrement())
+  name      String
+  email     String
+  phone     String?
+  subject   String?
+  message   String               @db.Text
+  status    ContactMessageStatus @default(unread)
+  createdAt DateTime             @default(now()) @map("created_at")
+
+  @@map("contact_messages")
+}
+
+model Donation {
+  id          Int            @id @default(autoincrement())
+  userEmail   String?        @map("user_email")
+  amount      Decimal        @db.Decimal(10, 2)
+  method      String
+  referenceId String         @unique @map("reference_id")
+  status      DonationStatus @default(pending)
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  @@map("donations")
+}
+
+model JobListing {
+  id               Int       @id @default(autoincrement())
+  title            String
+  department       String
+  location         String
+  employmentType   String    @default("Full-time") @map("employment_type")
+  description      String    @db.Text
+  requirements     String?   @db.Text
+  responsibilities String?   @db.Text
+  benefits         String?   @db.Text
+  salary           String?
+  applicationEmail String?   @map("application_email")
+  applyUrl         String?   @map("apply_url")
+  deadline         DateTime?
+  isActive         Boolean   @default(true) @map("is_active")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  @@map("job_listings")
+}
+
+model Career {
+  id               Int       @id @default(autoincrement())
+  title            String
+  slug             String    @unique
+  department       String
+  location         String
+  employmentType   String    @map("employment_type")
+  description      String    @db.Text
+  requirements     String    @db.Text
+  responsibilities String    @db.Text
+  benefits         String?   @db.Text
+  salary           String?
+  applicationEmail String    @map("application_email")
+  deadline         DateTime?
+  isActive         Boolean   @default(true) @map("is_active")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  @@map("careers")
+}
+
+model MinistryInfo {
+  id        Int      @id @default(autoincrement())
+  name      String
+  mission   String?  @db.Text
+  vision    String?  @db.Text
+  about     String?  @db.Text
+  address   String?
+  phone     String?
+  email     String?
+  website   String?
+  logoUrl   String?  @map("logo_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("ministry_info")
+}

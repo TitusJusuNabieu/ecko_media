@@ -1,56 +1,53 @@
-import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
 import { verifyAuth } from '@/lib/auth';
-import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const user = await verifyAuth(request);
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await verifyAuth(request);
+    if (!auth) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
 
-    const [listings] = await db.query<RowDataPacket[]>(
-      'SELECT * FROM job_listings ORDER BY created_at DESC'
-    );
+    const sermons = await prisma.sermon.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
 
-    return NextResponse.json({ success: true, data: listings });
+    return NextResponse.json({ success: true, data: sermons });
   } catch (error) {
-    console.error('Error fetching job listings:', error);
-    return NextResponse.json({ success: false, error: 'Failed to fetch job listings' }, { status: 500 });
+    console.error('Error fetching sermons:', error);
+    return NextResponse.json({ success: false, error: 'Failed to fetch sermons' }, { status: 500 });
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const user = await verifyAuth(request);
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
-
-    if (user.role !== 'admin' && user.role !== 'editor') {
+    const auth = await verifyAuth(request);
+    if (!auth) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    if (auth.role !== 'admin' && auth.role !== 'editor') {
       return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
     }
 
-    const body = await request.json();
-    const { title, department, location, employment_type, description, requirements, responsibilities, benefits, salary, application_email, apply_url, deadline } = body;
+    const { title, preacher, description, audioUrl, audio_url, thumbnailUrl, thumbnail_url, duration, isActive, publishedAt } = await request.json();
 
-    if (!title || !department || !location || !description) {
-      return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
+    if (!title || !preacher) {
+      return NextResponse.json({ success: false, error: 'title and preacher are required' }, { status: 400 });
     }
 
-    const [result] = await db.query<ResultSetHeader>(
-      `INSERT INTO job_listings (title, department, location, employment_type, description, requirements, responsibilities, benefits, salary, application_email, apply_url, deadline)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [title, department, location, employment_type || 'Full-time', description, requirements || null, responsibilities || null, benefits || null, salary || null, application_email || null, apply_url || null, deadline || null]
-    );
-
-    return NextResponse.json({ 
-      success: true, 
-      data: { id: result.insertId, ...body }
+    const sermon = await prisma.sermon.create({
+      data: {
+        title,
+        preacher,
+        description: description || null,
+        audioUrl: audioUrl || audio_url || null,
+        thumbnailUrl: thumbnailUrl || thumbnail_url || null,
+        duration: duration || null,
+        isActive: isActive !== false,
+        publishedAt: publishedAt ? new Date(publishedAt) : new Date(),
+      },
     });
+
+    return NextResponse.json({ success: true, data: sermon });
   } catch (error) {
-    console.error('Error creating job listing:', error);
-    return NextResponse.json({ success: false, error: 'Failed to create job listing' }, { status: 500 });
+    console.error('Error creating sermon:', error);
+    return NextResponse.json({ success: false, error: 'Failed to create sermon' }, { status: 500 });
   }
 }

@@ -23,7 +23,6 @@ export function Navbar() {
     { href: '/about', label: 'About', icon: Radio },
     { href: '/programs', label: 'Programs', icon: Mic2 },
     { href: '/careers', label: 'Careers', icon: Briefcase },
-    { href: '/job-listings', label: 'Job Listings', icon: Briefcase },
     { href: '/contact', label: 'Contact', icon: Phone },
   ];
 
@@ -57,7 +56,7 @@ export function Navbar() {
               <span className={`text-xs transition-colors ${
                 isScrolled ? 'text-muted-foreground' : 'text-primary'
               }`}>
-                104.3 FM • Bo, SL
+                97.7 FM • Bo, SL
               </span>
             </div>
           </Link>

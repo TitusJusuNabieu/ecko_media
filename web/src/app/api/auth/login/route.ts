@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserByEmail, verifyPassword, generateToken } from '@/lib/auth';
+import { rateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? 'unknown';
+    if (!rateLimit(`login:${ip}`, 5, 60_000)) {
+      return NextResponse.json({ success: false, message: 'Too many requests, please try again later' }, { status: 429 });
+    }
+
     const { email, password } = await request.json();
 
     if (!email || !password) {
@@ -12,56 +18,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user
     const user = await getUserByEmail(email);
-    if (!user || !user.password_hash) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid credentials' },
-        { status: 401 }
-      );
+    if (!user || !user.passwordHash) {
+      return NextResponse.json({ success: false, message: 'Invalid credentials' }, { status: 401 });
     }
 
-    // Verify password
-    const isValid = await verifyPassword(password, user.password_hash);
+    const isValid = await verifyPassword(password, user.passwordHash);
     if (!isValid) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid credentials' },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, message: 'Invalid credentials' }, { status: 401 });
     }
 
-    // Generate token
-    const token = generateToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role
-    });
+    const token = generateToken({ userId: user.id, email: user.email, role: user.role });
 
-    // Remove password from response
-    const { password_hash: _, ...userWithoutPassword } = user;
+    const { passwordHash: _, ...userWithoutPassword } = user;
 
-    const response = NextResponse.json({
-      success: true,
-      data: {
-        user: userWithoutPassword,
-        token
-      }
-    });
+    const response = NextResponse.json({ success: true, data: { user: userWithoutPassword, token } });
 
-    // Set HTTP-only cookie
     response.cookies.set('auth-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7 // 7 days
+      maxAge: 60 * 60 * 24 * 7,
     });
 
     return response;
   } catch (error) {
     console.error('Login error:', error);
-    return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }

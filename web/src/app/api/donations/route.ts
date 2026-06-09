@@ -1,79 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query, queryOne } from '@/lib/db';
-
-interface Donation {
-  id: number;
-  user_email?: string;
-  amount: number;
-  method: string;
-  reference_id: string;
-  status: string;
-  created_at: string;
-}
+import { prisma } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { user_email, amount, method } = body;
+    // Accept both mobile (email) and web (user_email) field names
+    const userEmail = body.user_email || body.email || null;
+    const amount = body.amount;
+    const method = body.method;
 
-    if (!amount || !method) {
-      return NextResponse.json(
-        { success: false, message: 'Missing required fields' },
-        { status: 400 }
-      );
+    if (amount == null || amount <= 0 || !method) {
+      return NextResponse.json({ success: false, message: 'amount and method are required' }, { status: 400 });
     }
 
-    // Generate unique reference ID
-    const reference_id = `DON-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const referenceId = `DON-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
-    await query(
-      `INSERT INTO donations (user_email, amount, method, reference_id, status)
-       VALUES (?, ?, ?, ?, 'pending')`,
-      [user_email || null, amount, method, reference_id]
-    );
-
-    // Get the created donation
-    const donation = await queryOne<Donation>(
-      `SELECT * FROM donations WHERE reference_id = ?`,
-      [reference_id]
-    );
-
-    return NextResponse.json({
-      success: true,
-      data: donation,
-      message: 'Donation created successfully'
+    const donation = await prisma.donation.create({
+      data: {
+        userEmail,
+        amount,
+        method,
+        referenceId,
+        status: 'pending',
+      },
     });
+
+    return NextResponse.json({ success: true, data: donation, message: 'Donation created successfully' });
   } catch (error) {
     console.error('Error creating donation:', error);
-    return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }
 
-export async function GET(request: NextRequest) {
-  try {
-    const searchParams = request.nextUrl.searchParams;
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const offset = parseInt(searchParams.get('offset') || '0');
-
-    const donations = await query<Donation>(
-      `SELECT * FROM donations 
-       ORDER BY created_at DESC 
-       LIMIT ? OFFSET ?`,
-      [limit, offset]
-    );
-
-    return NextResponse.json({
-      success: true,
-      data: donations
-    });
-  } catch (error) {
-    console.error('Error fetching donations:', error);
-    return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}

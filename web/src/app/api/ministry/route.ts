@@ -1,64 +1,38 @@
 import { NextResponse } from 'next/server';
-import { queryOne, query } from '@/lib/db';
-
-interface MinistryInfo {
-  id: number;
-  name: string;
-  mission?: string;
-  vision?: string;
-  about?: string;
-  address?: string;
-  phone?: string;
-  email?: string;
-  website?: string;
-  logo_url?: string;
-}
+import { prisma } from '@/lib/db';
 
 export async function GET() {
   try {
-    const ministry = await queryOne<MinistryInfo>(
-      `SELECT * FROM ministry_info LIMIT 1`
-    );
+    const ministry = await prisma.ministryInfo.findFirst();
 
     if (!ministry) {
-      return NextResponse.json(
-        { success: false, message: 'Ministry information not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, message: 'Ministry information not found' }, { status: 404 });
     }
 
-    // Fetch leaders from users table for mobile app compatibility
-    const leaders = await query(`
-      SELECT 
-        name, 
-        role, 
-        avatar as imageUrl,
-        email,
-        CONCAT('Team member at Ecko Media') as bio
-      FROM users 
-      WHERE role IN ('admin', 'editor')
-      ORDER BY 
-        CASE 
-          WHEN role = 'admin' THEN 1
-          WHEN role = 'editor' THEN 2
-          ELSE 3
-        END,
-        created_at ASC
-      LIMIT 10
-    `);
+    const leaders = await prisma.user.findMany({
+      where: {
+        isActive: true,
+        role: { in: ['admin', 'editor'] },
+      },
+      select: { name: true, role: true, avatar: true, email: true },
+      orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
+      take: 10,
+    });
+
+    const formattedLeaders = leaders.map((u) => ({
+      name: u.name,
+      role: u.role,
+      imageUrl: u.avatar,
+      email: u.email,
+      bio: 'Team member at Ecko Media',
+    }));
 
     return NextResponse.json({
       success: true,
-      data: {
-        ...ministry,
-        leaders: leaders || []
-      }
+      data: { ...ministry, leaders: formattedLeaders },
     });
   } catch (error) {
     console.error('Error fetching ministry info:', error);
-    return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }

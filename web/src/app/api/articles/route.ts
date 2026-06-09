@@ -1,42 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
-import { Article } from '@/types';
+import { prisma } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
+    const { searchParams } = request.nextUrl;
     const category = searchParams.get('category');
     const limit = parseInt(searchParams.get('limit') || '10');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    let sql = `
-      SELECT a.*, ac.name as category_name, ac.slug as category_slug,
-             u.name as author_name, u.email as author_email, u.avatar as author_avatar
-      FROM articles a
-      LEFT JOIN article_categories ac ON a.category_id = ac.id
-      LEFT JOIN users u ON a.author_id = u.id
-      WHERE a.status = 'published' AND a.published_at <= NOW()
-    `;
-    const values: any[] = [];
-
-    if (category) {
-      sql += " AND ac.slug = ?";
-      values.push(category);
-    }
-
-    sql += ` ORDER BY a.published_at DESC LIMIT ${limit} OFFSET ${offset}`;
-
-    const articles = await query<Article>(sql, values);
-
-    return NextResponse.json({
-      success: true,
-      data: articles
+    const articles = await prisma.article.findMany({
+      where: {
+        status: 'published',
+        publishedAt: { lte: new Date() },
+        ...(category
+          ? { category: { slug: category } }
+          : {}),
+      },
+      include: {
+        category: { select: { name: true, slug: true } },
+        author: { select: { name: true, email: true, avatar: true } },
+      },
+      orderBy: { publishedAt: 'desc' },
+      take: limit,
+      skip: offset,
     });
+
+    return NextResponse.json({ success: true, data: articles });
   } catch (error) {
     console.error('Error fetching articles:', error);
-    return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }

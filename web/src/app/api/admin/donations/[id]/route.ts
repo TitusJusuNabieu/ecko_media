@@ -1,30 +1,23 @@
-import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
 import { verifyAuth } from '@/lib/auth';
-import { ResultSetHeader } from 'mysql2';
 
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await verifyAuth(request);
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await verifyAuth(request);
+    if (!auth) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    if (auth.role !== 'admin') return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
 
-    if (user.role !== 'admin') {
-      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
-    }
-
-    const body = await request.json();
-    const { status } = body;
     const { id } = await params;
+    const { status } = await request.json();
 
-    await db.query<ResultSetHeader>(
-      'UPDATE donations SET status = ? WHERE id = ?',
-      [status, id]
-    );
+    await prisma.donation.update({
+      where: { id: parseInt(id) },
+      data: { status },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

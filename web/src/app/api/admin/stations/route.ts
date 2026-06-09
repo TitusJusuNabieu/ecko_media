@@ -1,39 +1,54 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { verifyAuth } from '@/lib/auth';
+
+export async function GET(request: NextRequest) {
+  try {
+    const auth = await verifyAuth(request);
+    if (!auth) return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+
+    const stations = await prisma.station.findMany({ orderBy: { createdAt: 'desc' } });
+    return NextResponse.json({ success: true, data: stations });
+  } catch (error) {
+    console.error('Error fetching stations:', error);
+    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
     const auth = await verifyAuth(request);
-    if (!auth) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
-    }
+    if (!auth) return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
 
     const body = await request.json();
     const {
-      name, slug, logo_url, description, tagline, stream_url,
-      stream_url_high, stream_url_low, genre, sub_genres,
-      language, country, social_media, is_featured
+      name, slug, logoUrl, logo_url, description, tagline,
+      streamUrl, stream_url, streamUrlHigh, stream_url_high,
+      streamUrlLow, stream_url_low, genre, subGenres, sub_genres,
+      language, country, socialMedia, social_media, isFeatured, is_featured,
     } = body;
 
-    const sql = `
-      INSERT INTO stations (
-        name, slug, logo_url, description, tagline, stream_url,
-        stream_url_high, stream_url_low, genre, sub_genres,
-        language, country, social_media, is_featured, is_active
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
-    `;
+    const station = await prisma.station.create({
+      data: {
+        name,
+        slug,
+        logoUrl: logoUrl || logo_url || null,
+        description: description || null,
+        tagline: tagline || null,
+        streamUrl: streamUrl || stream_url,
+        streamUrlHigh: streamUrlHigh || stream_url_high || null,
+        streamUrlLow: streamUrlLow || stream_url_low || null,
+        genre,
+        subGenres: subGenres || sub_genres || [],
+        language: language || 'English',
+        country: country || 'Sierra Leone',
+        socialMedia: socialMedia || social_media || {},
+        isFeatured: isFeatured || is_featured || false,
+        isActive: true,
+      },
+    });
 
-    await query(sql, [
-      name, slug, logo_url, description, tagline, stream_url,
-      stream_url_high, stream_url_low, genre,
-      JSON.stringify(sub_genres || []),
-      language, country,
-      JSON.stringify(social_media || {}),
-      is_featured ? 1 : 0
-    ]);
-
-    return NextResponse.json({ success: true, message: 'Station created successfully' });
+    return NextResponse.json({ success: true, data: station, message: 'Station created successfully' });
   } catch (error) {
     console.error('Error creating station:', error);
     return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
@@ -43,36 +58,37 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const auth = await verifyAuth(request);
-    if (!auth) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
-    }
+    if (!auth) return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
 
     const body = await request.json();
     const {
-      id, name, slug, logo_url, description, tagline, stream_url,
-      stream_url_high, stream_url_low, genre, sub_genres,
-      language, country, social_media, is_featured, is_active
+      id, name, slug, logoUrl, logo_url, description, tagline,
+      streamUrl, stream_url, streamUrlHigh, stream_url_high,
+      streamUrlLow, stream_url_low, genre, subGenres, sub_genres,
+      language, country, socialMedia, social_media,
+      isFeatured, is_featured, isActive, is_active,
     } = body;
 
-    const sql = `
-      UPDATE stations SET
-        name = ?, slug = ?, logo_url = ?, description = ?, tagline = ?,
-        stream_url = ?, stream_url_high = ?, stream_url_low = ?,
-        genre = ?, sub_genres = ?, language = ?, country = ?,
-        social_media = ?, is_featured = ?, is_active = ?, updated_at = NOW()
-      WHERE id = ?
-    `;
-
-    await query(sql, [
-      name, slug, logo_url, description, tagline, stream_url,
-      stream_url_high, stream_url_low, genre,
-      JSON.stringify(sub_genres || []),
-      language, country,
-      JSON.stringify(social_media || {}),
-      is_featured ? 1 : 0,
-      is_active ? 1 : 0,
-      id
-    ]);
+    await prisma.station.update({
+      where: { id: parseInt(id) },
+      data: {
+        name,
+        slug,
+        logoUrl: logoUrl || logo_url || null,
+        description: description || null,
+        tagline: tagline || null,
+        streamUrl: streamUrl || stream_url,
+        streamUrlHigh: streamUrlHigh || stream_url_high || null,
+        streamUrlLow: streamUrlLow || stream_url_low || null,
+        genre,
+        subGenres: subGenres || sub_genres || [],
+        language: language || 'English',
+        country: country || 'Sierra Leone',
+        socialMedia: socialMedia || social_media || {},
+        isFeatured: isFeatured ?? is_featured ?? false,
+        isActive: isActive ?? is_active ?? true,
+      },
+    });
 
     return NextResponse.json({ success: true, message: 'Station updated successfully' });
   } catch (error) {

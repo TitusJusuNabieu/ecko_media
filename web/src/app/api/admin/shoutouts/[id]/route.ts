@@ -1,26 +1,26 @@
-import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
 import { verifyAuth } from '@/lib/auth';
-import { ResultSetHeader } from 'mysql2';
 
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await verifyAuth(request);
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await verifyAuth(request);
+    if (!auth) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
 
-    const body = await request.json();
-    const { status } = body;
     const { id } = await params;
+    const { status, readOnAir, read_on_air } = await request.json();
 
-    await db.query<ResultSetHeader>(
-      'UPDATE shoutouts SET status = ? WHERE id = ?',
-      [status, id]
-    );
+    await prisma.shoutout.update({
+      where: { id: parseInt(id) },
+      data: {
+        ...(status !== undefined && { status }),
+        ...(readOnAir !== undefined && { readOnAir }),
+        ...(read_on_air !== undefined && { readOnAir: read_on_air }),
+      },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -30,21 +30,15 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await verifyAuth(request);
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await verifyAuth(request);
+    if (!auth) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
 
     const { id } = await params;
-
-    await db.query<ResultSetHeader>(
-      'DELETE FROM shoutouts WHERE id = ?',
-      [id]
-    );
+    await prisma.shoutout.delete({ where: { id: parseInt(id) } });
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -1,40 +1,58 @@
-import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
 import { verifyAuth } from '@/lib/auth';
-import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const user = await verifyAuth(request);
-    if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    const auth = await verifyAuth(request);
+    if (!auth) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
 
-    const [listings] = await db.query<RowDataPacket[]>(`SELECT * FROM job_listings ORDER BY created_at DESC`);
+    const listings = await prisma.jobListing.findMany({ orderBy: { createdAt: 'desc' } });
     return NextResponse.json({ success: true, data: listings });
   } catch (error) {
-    console.error('Error fetching admin job listings:', error);
+    console.error('Error fetching job listings:', error);
     return NextResponse.json({ success: false, error: 'Failed to fetch job listings' }, { status: 500 });
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const user = await verifyAuth(request);
-    if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    if (user.role !== 'admin' && user.role !== 'editor') return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+    const auth = await verifyAuth(request);
+    if (!auth) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    if (auth.role !== 'admin' && auth.role !== 'editor') {
+      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+    }
 
-    const body = await request.json();
-    const { title, department, location, employment_type, description, requirements, responsibilities, benefits, salary, application_email, apply_url, deadline, is_active } = body;
+    const {
+      title, department, location, employment_type, employmentType,
+      description, requirements, responsibilities, benefits, salary,
+      application_email, applicationEmail, apply_url, applyUrl,
+      deadline, isActive, is_active,
+    } = await request.json();
 
     if (!title || !department || !location || !description) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
     }
 
-    const [result] = await db.query<ResultSetHeader>(
-      `INSERT INTO job_listings (title, department, location, employment_type, description, requirements, responsibilities, benefits, salary, application_email, apply_url, deadline, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)` ,
-      [title, department, location, employment_type || 'Full-time', description, requirements || null, responsibilities || null, benefits || null, salary || null, application_email || null, apply_url || null, deadline || null, is_active ? 1 : 1]
-    );
+    const listing = await prisma.jobListing.create({
+      data: {
+        title,
+        department,
+        location,
+        employmentType: employmentType || employment_type || 'Full-time',
+        description,
+        requirements: requirements || null,
+        responsibilities: responsibilities || null,
+        benefits: benefits || null,
+        salary: salary || null,
+        applicationEmail: applicationEmail || application_email || null,
+        applyUrl: applyUrl || apply_url || null,
+        deadline: deadline ? new Date(deadline) : null,
+        isActive: isActive ?? is_active ?? true,
+      },
+    });
 
-    return NextResponse.json({ success: true, data: { id: result.insertId, ...body } });
+    return NextResponse.json({ success: true, data: listing });
   } catch (error) {
     console.error('Error creating job listing:', error);
     return NextResponse.json({ success: false, error: 'Failed to create job listing' }, { status: 500 });

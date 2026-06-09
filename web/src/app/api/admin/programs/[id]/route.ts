@@ -1,30 +1,30 @@
-import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
 import { verifyAuth } from '@/lib/auth';
-import { ResultSetHeader } from 'mysql2';
 
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await verifyAuth(request);
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
-
-    if (user.role !== 'admin' && user.role !== 'editor') {
+    const auth = await verifyAuth(request);
+    if (!auth) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    if (auth.role !== 'admin' && auth.role !== 'editor') {
       return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
     }
 
-    const body = await request.json();
-    const { is_active } = body;
     const { id } = await params;
+    const body = await request.json();
 
-    await db.query<ResultSetHeader>(
-      'UPDATE programs SET is_active = ? WHERE id = ?',
-      [is_active, id]
-    );
+    await prisma.program.update({
+      where: { id: parseInt(id) },
+      data: {
+        ...(body.isActive !== undefined && { isActive: body.isActive }),
+        ...(body.is_active !== undefined && { isActive: body.is_active }),
+        ...(body.name !== undefined && { name: body.name }),
+        ...(body.schedule !== undefined && { schedule: body.schedule }),
+      },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -34,25 +34,18 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await verifyAuth(request);
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
-
-    if (user.role !== 'admin') {
+    const auth = await verifyAuth(request);
+    if (!auth) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    if (auth.role !== 'admin') {
       return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
     }
 
     const { id } = await params;
-
-    await db.query<ResultSetHeader>(
-      'DELETE FROM programs WHERE id = ?',
-      [id]
-    );
+    await prisma.program.delete({ where: { id: parseInt(id) } });
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { verifyAuth } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 
@@ -14,53 +14,30 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const body = await request.json();
-    const { name, email, password, role, avatar } = body;
+    const { name, email, password, role, avatar } = await request.json();
 
     if (!name || !email) {
-      return NextResponse.json(
-        { success: false, message: 'Name and email are required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, message: 'Name and email are required' }, { status: 400 });
     }
 
-    // Check if email is taken by another user
-    const existingUsers = await query(
-      'SELECT id FROM users WHERE email = ? AND id != ?',
-      [email, id]
-    );
-    
-    if (existingUsers.length > 0) {
-      return NextResponse.json(
-        { success: false, message: 'Email already exists' },
-        { status: 400 }
-      );
-    }
-
-    let sql = 'UPDATE users SET name = ?, email = ?, role = ?, avatar = ?';
-    const values: any[] = [name, email, role || 'editor', avatar || null];
-
-    if (password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      sql += ', password = ?';
-      values.push(hashedPassword);
-    }
-
-    sql += ', updated_at = NOW() WHERE id = ?';
-    values.push(id);
-
-    await query(sql, values);
-
-    return NextResponse.json({
-      success: true,
-      message: 'User updated successfully'
+    const existing = await prisma.user.findFirst({
+      where: { email, NOT: { id: parseInt(id) } },
     });
+    if (existing) {
+      return NextResponse.json({ success: false, message: 'Email already exists' }, { status: 400 });
+    }
+
+    const updateData: any = { name, email, role: role || 'editor', avatar: avatar || null };
+    if (password) {
+      updateData.passwordHash = await bcrypt.hash(password, 10);
+    }
+
+    await prisma.user.update({ where: { id: parseInt(id) }, data: updateData });
+
+    return NextResponse.json({ success: true, message: 'User updated successfully' });
   } catch (error) {
     console.error('Error updating user:', error);
-    return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -76,25 +53,15 @@ export async function DELETE(
 
     const { id } = await params;
 
-    // Prevent deleting own account
     if (parseInt(id) === auth.userId) {
-      return NextResponse.json(
-        { success: false, message: 'Cannot delete your own account' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, message: 'Cannot delete your own account' }, { status: 400 });
     }
 
-    await query('DELETE FROM users WHERE id = ?', [id]);
+    await prisma.user.delete({ where: { id: parseInt(id) } });
 
-    return NextResponse.json({
-      success: true,
-      message: 'User deleted successfully'
-    });
+    return NextResponse.json({ success: true, message: 'User deleted successfully' });
   } catch (error) {
     console.error('Error deleting user:', error);
-    return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }

@@ -1,26 +1,22 @@
-import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
 import { verifyAuth } from '@/lib/auth';
-import { ResultSetHeader } from 'mysql2';
 
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await verifyAuth(request);
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await verifyAuth(request);
+    if (!auth) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
 
-    const body = await request.json();
-    const { status } = body;
     const { id } = await params;
+    const { status } = await request.json();
 
-    await db.query<ResultSetHeader>(
-      'UPDATE contact_messages SET status = ? WHERE id = ?',
-      [status, id]
-    );
+    await prisma.contactMessage.update({
+      where: { id: parseInt(id) },
+      data: { status },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -30,21 +26,15 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await verifyAuth(request);
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await verifyAuth(request);
+    if (!auth) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
 
     const { id } = await params;
-
-    await db.query<ResultSetHeader>(
-      'DELETE FROM contact_messages WHERE id = ?',
-      [id]
-    );
+    await prisma.contactMessage.delete({ where: { id: parseInt(id) } });
 
     return NextResponse.json({ success: true });
   } catch (error) {

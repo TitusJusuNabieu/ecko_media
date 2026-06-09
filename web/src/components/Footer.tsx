@@ -26,14 +26,22 @@ export function Footer() {
               </div>
               <div>
                 <h3 className="font-bold text-lg">Ecko Media</h3>
-                <p className="text-sm text-slate-400">104.3 FM</p>
+                <p className="text-sm text-slate-400">97.7 FM</p>
               </div>
             </div>
             <p className="text-slate-300 text-sm leading-relaxed">
-              Ecko Media, connecting voices Since 2021
+              Sierra Leone's trusted Christian media house. Broadcasting 24/7 from Bo since 2003.
             </p>
             <div className="flex gap-3">
-              {[Facebook, Twitter, Instagram, Youtube].map((Icon, i) => (
+              <a
+                href="https://www.facebook.com/eckomedia232"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-full bg-slate-800 hover:bg-primary text-slate-400 hover:text-white transition-all"
+              >
+                <Facebook className="w-5 h-5" />
+              </a>
+              {[Twitter, Instagram, Youtube].map((Icon, i) => (
                 <a
                   key={i}
                   href="#"
@@ -52,9 +60,9 @@ export function Footer() {
               {[
                 { href: '/about', label: 'About Us' },
                 { href: '/programs', label: 'Programs' },
+                { href: '/sermons', label: 'Sermons' },
+                { href: '/articles', label: 'News & Articles' },
                 { href: '/careers', label: 'Careers' },
-                { href: '/job-listings', label: 'Job Listings' },
-                { href: '/articles', label: 'Articles' },
                 { href: '/contact', label: 'Contact' },
               ].map((link) => (
                 <li key={link.label}>
@@ -71,7 +79,7 @@ export function Footer() {
 
           {/* Programs */}
           <div>
-            <h4 className="font-bold text-lg mb-6">Popular Programs</h4>
+            <h4 className="font-bold text-lg mb-6">On Air</h4>
             <ul className="space-y-3">
               {[
                 'Morning Glory',
@@ -82,7 +90,7 @@ export function Footer() {
                 'Sunday Service',
               ].map((program) => (
                 <li key={program}>
-                  <Link href="#" className="text-slate-400 hover:text-primary transition-colors text-sm">
+                  <Link href="/programs" className="text-slate-400 hover:text-primary transition-colors text-sm">
                     {program}
                   </Link>
                 </li>
@@ -118,10 +126,16 @@ export function Footer() {
                   info@eckomedia.sl
                 </a>
               </li>
+              <li className="flex items-center gap-3">
+                <Radio className="w-5 h-5 text-primary flex-shrink-0" />
+                <span className="text-slate-400 text-sm font-medium">97.7 FM — Bo, Sierra Leone</span>
+              </li>
             </ul>
-            <Button className="mt-6 w-full bg-gradient-to-r from-secondary to-secondary/90">
-              <Heart className="w-4 h-4 mr-2" />
-              Support Our Ministry
+            <Button className="mt-6 w-full bg-gradient-to-r from-secondary to-secondary/90" asChild>
+              <Link href="/donate">
+                <Heart className="w-4 h-4 mr-2" />
+                Support Our Work
+              </Link>
             </Button>
           </div>
         </div>
@@ -131,7 +145,7 @@ export function Footer() {
       <div className="border-t border-slate-700">
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
-            <p>© {currentYear} Ecko Media. All rights reserved.</p>
+            <p>© {currentYear} Ecko Media 97.7 FM. All rights reserved.</p>
             <div className="flex gap-6">
               <Link href="/privacy" className="hover:text-primary transition-colors">
                 Privacy Policy

@@ -1,18 +1,16 @@
-import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
 import { verifyAuth } from '@/lib/auth';
-import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const user = await verifyAuth(request);
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await verifyAuth(request);
+    if (!auth) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
 
-    const [programs] = await db.query<RowDataPacket[]>(
-      'SELECT * FROM programs ORDER BY created_at DESC'
-    );
+    const programs = await prisma.program.findMany({
+      include: { station: { select: { name: true } } },
+      orderBy: { createdAt: 'desc' },
+    });
 
     return NextResponse.json({ success: true, data: programs });
   } catch (error) {
@@ -21,36 +19,36 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const user = await verifyAuth(request);
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
-
-    if (user.role !== 'admin' && user.role !== 'editor') {
+    const auth = await verifyAuth(request);
+    if (!auth) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    if (auth.role !== 'admin' && auth.role !== 'editor') {
       return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
     }
 
-    const body = await request.json();
-    const { station_id, name, slug, description, host_name, genre, schedule, is_active } = body;
+    const { stationId, station_id, name, slug, description, hostName, host_name, genre, schedule, isActive } = await request.json();
+    const resolvedStationId = stationId || station_id;
+    const resolvedHostName = hostName || host_name;
 
-    if (!station_id || !name || !slug || !host_name) {
-      return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
+    if (!resolvedStationId || !name || !slug || !resolvedHostName) {
+      return NextResponse.json({ success: false, error: 'stationId, name, slug, and hostName are required' }, { status: 400 });
     }
 
-    const scheduleJson = schedule ? JSON.stringify(schedule) : null;
-
-    const [result] = await db.query<ResultSetHeader>(
-      `INSERT INTO programs (station_id, name, slug, description, host_name, genre, schedule, is_active)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [station_id, name, slug, description || null, host_name, genre || null, scheduleJson, is_active !== false]
-    );
-
-    return NextResponse.json({ 
-      success: true, 
-      data: { id: result.insertId, ...body }
+    const program = await prisma.program.create({
+      data: {
+        stationId: parseInt(resolvedStationId),
+        name,
+        slug,
+        description: description || null,
+        hostName: resolvedHostName,
+        genre: genre || null,
+        schedule: schedule || {},
+        isActive: isActive !== false,
+      },
     });
+
+    return NextResponse.json({ success: true, data: program });
   } catch (error) {
     console.error('Error creating program:', error);
     return NextResponse.json({ success: false, error: 'Failed to create program' }, { status: 500 });

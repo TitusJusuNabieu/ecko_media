@@ -1,18 +1,15 @@
-import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
 import { verifyAuth } from '@/lib/auth';
-import { RowDataPacket } from 'mysql2';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const user = await verifyAuth(request);
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await verifyAuth(request);
+    if (!auth) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
 
-    const [shoutouts] = await db.query<RowDataPacket[]>(
-      'SELECT * FROM shoutouts ORDER BY created_at DESC'
-    );
+    const shoutouts = await prisma.shoutout.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
 
     return NextResponse.json({ success: true, data: shoutouts });
   } catch (error) {

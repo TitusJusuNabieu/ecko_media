@@ -4,60 +4,72 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Users, Radio, Heart, Target, Award, MapPin, Globe, Mail, TrendingUp, Mic2, Calendar } from 'lucide-react';
+import { Users, Radio, Target, Award, MapPin, Mail, Mic2, Calendar, Tv2, Newspaper } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
 export default function AboutPage() {
   const [ministryInfo, setMinistryInfo] = useState<any>(null);
-  const [team, setTeam] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadData();
+    fetch('/api/ministry')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data) setMinistryInfo(data.data);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
-
-  const loadData = async () => {
-    try {
-      const [ministryRes, teamRes] = await Promise.all([
-        fetch('/api/ministry'),
-        fetch('/api/admin/users')
-      ]);
-
-      const ministryData = await ministryRes.json();
-      const teamData = await teamRes.json();
-
-      if (ministryData.success && ministryData.data) {
-        setMinistryInfo(ministryData.data);
-        if (ministryData.data.leaders && ministryData.data.leaders.length > 0) {
-          setTeam(ministryData.data.leaders);
-        }
-      }
-      
-      if (teamData.success && team.length === 0) {
-        setTeam(teamData.data.filter((u: any) => u.role !== 'moderator').slice(0, 8));
-      }
-    } catch (error) {
-      console.error('Failed to load data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const stats = [
     { icon: Users, label: 'Community Reach', value: '10K+', color: 'text-blue-500' },
     { icon: Radio, label: 'Broadcasting', value: '24/7', color: 'text-primary' },
     { icon: Mic2, label: 'Programs', value: '15+', color: 'text-green-500' },
-    { icon: Calendar, label: 'Since', value: '2003', color: 'text-purple-500' },
+    { icon: Calendar, label: 'Est.', value: '2003', color: 'text-purple-500' },
   ];
 
   const branches = [
-    { name: 'Bo (Headquarters)', location: 'Southern Province', status: 'Active' },
+    { name: 'Bo — Headquarters', location: 'Southern Province', status: 'Active' },
     { name: 'Kono', location: 'Eastern Province', status: 'Active' },
     { name: 'Makeni', location: 'Northern Province', status: 'Active' },
     { name: 'Waterloo', location: 'Western Area', status: 'Coming Soon' },
     { name: 'Kenema', location: 'Eastern Province', status: 'Coming Soon' },
   ];
+
+  const services = [
+    {
+      icon: Radio,
+      title: 'Live Broadcasting',
+      description: 'Round-the-clock FM radio broadcasting on 97.7 FM from Bo, reaching Sierra Leoneans across the country and online.',
+      color: 'text-primary',
+      bg: 'bg-primary/10',
+    },
+    {
+      icon: Mic2,
+      title: 'Original Programs',
+      description: 'Inspiring talk shows, devotionals, news, music programs, and community discussions crafted for Sierra Leonean audiences.',
+      color: 'text-blue-500',
+      bg: 'bg-blue-500/10',
+    },
+    {
+      icon: Newspaper,
+      title: 'News & Journalism',
+      description: 'Credible local and national news coverage, keeping communities informed with accurate, responsible reporting.',
+      color: 'text-green-500',
+      bg: 'bg-green-500/10',
+    },
+    {
+      icon: Tv2,
+      title: 'Online Streaming',
+      description: 'Listen anywhere in the world through our online stream and mobile app — bringing Ecko Media to the diaspora.',
+      color: 'text-purple-500',
+      bg: 'bg-purple-500/10',
+    },
+  ];
+
+  const aboutText = ministryInfo?.about ||
+    'Ecko Media 97.7 FM is a pioneering Christian radio station in Sierra Leone, founded in September 2003. Licensed and regulated by the Independent Media Commission (IMC), we have spent over two decades delivering credible news, inspiring programs, and quality entertainment to Sierra Leoneans. Headquartered in Bo with active branches in Kono and Makeni, our signal and online stream reach listeners across the nation and the diaspora. We are committed to serving our communities with integrity, reflecting the values of faith, excellence, and development in everything we broadcast.';
 
   return (
     <div className="min-h-screen pt-20 pb-24">
@@ -68,16 +80,16 @@ export default function AboutPage() {
           <div className="max-w-4xl mx-auto text-center">
             <Badge className="mb-6 bg-primary/20 text-primary border-primary/30 text-base px-4 py-2">About Us</Badge>
             <h1 className="text-5xl md:text-7xl font-bold mb-6">
-              Broadcasting the <span className="text-primary">Good News</span>
+              Sierra Leone's <span className="text-primary">Trusted Voice</span>
             </h1>
             <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed">
-              {ministryInfo?.name || 'Ecko Media'} - Reaching the Unreached in Sierra Leone 🇸🇱
+              Ecko Media 97.7 FM — Bo, Sierra Leone. Broadcasting since 2003. 🇸🇱
             </p>
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
+      {/* Stats */}
       <section className="py-16 bg-background border-b">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
@@ -96,7 +108,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Our Story Section */}
+      {/* Who We Are */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
@@ -106,15 +118,9 @@ export default function AboutPage() {
             </div>
             <Card className="border-2">
               <CardContent className="p-8 md:p-12">
-                <div className="prose prose-lg max-w-none">
-                  <p className="text-lg text-muted-foreground leading-relaxed">
-                    {ministryInfo?.about || loading ? (
-                      ministryInfo?.about
-                    ) : (
-                      "Ecko Media 97.7fm is a pioneering Christian radio station in Sierra Leone, owned by the New Harvest Global Ministries, under the leadership of Rev. Shodankeh Johnson. Founded in September 2003, we're proud to be a licensed and regulated member of the Independent Media Commission (IMC). Our mission is to \"Reach the Unreached\" with the Gospel, broadcasting messages of salvation, peace, and development. With branches in Kono, Makeni, and plans to expand to Waterloo and Kenema, we're committed to serving Sierra Leoneans and beyond with credible news, inspiring programs, and the unadulterated Word of God. Our goal is to comfort the afflicted, save the unsaved, edify believers, and glorify God, while contributing to national development."
-                    )}
-                  </p>
-                </div>
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  {loading ? '...' : aboutText}
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -136,7 +142,7 @@ export default function AboutPage() {
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-muted-foreground leading-relaxed">
-                  {ministryInfo?.mission || 'To "Reach the Unreached" with the Gospel, broadcasting messages of salvation, peace, and development across Sierra Leone and beyond.'}
+                  {ministryInfo?.mission || 'To reach every corner of Sierra Leone with credible news, inspiring programming, and the transformative power of the Gospel — on air and online, 24 hours a day.'}
                 </p>
               </CardContent>
             </Card>
@@ -152,7 +158,7 @@ export default function AboutPage() {
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-muted-foreground leading-relaxed">
-                  {ministryInfo?.vision || 'To be a pioneering Christian radio station that transforms lives through credible news, inspiring programs, and the unadulterated Word of God.'}
+                  {ministryInfo?.vision || 'To be the most trusted and far-reaching Christian media house in West Africa — a platform that informs, uplifts, and unites communities.'}
                 </p>
               </CardContent>
             </Card>
@@ -161,14 +167,14 @@ export default function AboutPage() {
               <CardHeader className="text-center pb-4">
                 <div className="flex justify-center mb-4">
                   <div className="p-4 rounded-2xl bg-pink-500/10 group-hover:scale-110 transition-transform">
-                    <Heart className="w-12 h-12 text-pink-500" />
+                    <Radio className="w-12 h-12 text-pink-500" />
                   </div>
                 </div>
                 <CardTitle className="text-2xl">Our Values</CardTitle>
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-muted-foreground leading-relaxed">
-                  Faith, Integrity, Excellence, and Service. We are committed to glorifying God while contributing to national development.
+                  Faith, Integrity, Excellence, and Community. Every broadcast reflects our commitment to responsible journalism and quality Christian content.
                 </p>
               </CardContent>
             </Card>
@@ -176,52 +182,37 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Team Section */}
-      {team.length > 0 && (
-        <section className="py-20 bg-muted/30">
-          <div className="container mx-auto px-4">
-            <div className="max-w-6xl mx-auto">
-              <div className="text-center mb-16">
-                <Badge className="mb-4 bg-secondary/10 text-secondary border-secondary/20">Our Team</Badge>
-                <h2 className="text-4xl md:text-5xl font-bold mb-4">Meet Our Team</h2>
-                <p className="text-xl text-muted-foreground">
-                  Dedicated individuals serving God and community
-                </p>
-              </div>
-
-              <div className="grid md:grid-cols-4 gap-8">
-                {team.map((member, i) => (
-                  <Card key={i} className="group hover:shadow-xl transition-all hover:-translate-y-2 duration-300 overflow-hidden">
-                    <CardContent className="p-6 text-center">
-                      <div className="relative w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-secondary/20">
-                        {member.avatar || member.imageUrl ? (
-                          <Image
-                            src={member.avatar || member.imageUrl}
-                            alt={member.name}
-                            fill
-                            className="object-cover group-hover:scale-110 transition-transform duration-300"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Users className="w-16 h-16 text-primary" />
-                          </div>
-                        )}
-                      </div>
-                      <h3 className="font-bold text-lg mb-1">{member.name}</h3>
-                      <p className="text-sm text-primary font-medium capitalize mb-2">{member.role}</p>
-                      {member.bio && (
-                        <p className="text-xs text-muted-foreground line-clamp-2">{member.bio}</p>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+      {/* What We Do */}
+      <section className="py-20 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">What We Do</Badge>
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">Our Services</h2>
+              <p className="text-xl text-muted-foreground">
+                More than a radio station — a full media house serving Sierra Leone
+              </p>
+            </div>
+            <div className="grid md:grid-cols-2 gap-8">
+              {services.map((service, i) => (
+                <Card key={i} className="group border-2 hover:border-primary/40 hover:shadow-xl transition-all duration-300">
+                  <CardContent className="p-8 flex gap-6">
+                    <div className={`p-4 rounded-2xl ${service.bg} h-fit group-hover:scale-110 transition-transform duration-300`}>
+                      <service.icon className={`w-8 h-8 ${service.color}`} />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold mb-2">{service.title}</h3>
+                      <p className="text-muted-foreground leading-relaxed">{service.description}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
-      {/* Branches Section */}
+      {/* Branches */}
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
@@ -229,10 +220,9 @@ export default function AboutPage() {
               <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">Our Reach</Badge>
               <h2 className="text-4xl md:text-5xl font-bold mb-4">Our Branches</h2>
               <p className="text-xl text-muted-foreground">
-                Serving communities across Sierra Leone
+                Expanding across Sierra Leone to serve every province
               </p>
             </div>
-
             <div className="grid md:grid-cols-2 gap-4">
               {branches.map((branch, i) => (
                 <Card key={i} className="hover:shadow-lg transition-all hover:border-primary/30">
@@ -245,7 +235,7 @@ export default function AboutPage() {
                         </div>
                         <p className="text-sm text-muted-foreground">{branch.location}</p>
                       </div>
-                      <Badge 
+                      <Badge
                         variant={branch.status === 'Active' ? 'default' : 'secondary'}
                         className={branch.status === 'Active' ? 'bg-green-500' : ''}
                       >
@@ -260,15 +250,15 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* CTA */}
       <section className="py-20 bg-gradient-to-br from-secondary via-secondary/95 to-secondary/90 text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center space-y-8">
             <h2 className="text-4xl md:text-5xl font-bold">
-              Join Our Mission
+              Tune In. Connect. Stay Informed.
             </h2>
             <p className="text-xl text-white/90">
-              Partner with us in spreading the Good News and transforming lives across Sierra Leone
+              Listen to Ecko Media 97.7 FM live or reach out — we love hearing from our community.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" className="bg-primary text-secondary hover:bg-primary/90 text-lg px-10 py-7 font-bold" asChild>

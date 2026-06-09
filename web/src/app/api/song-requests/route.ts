@@ -1,33 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { prisma } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { station_id, requester_name, requester_email, song_title, artist_name, message } = body;
+    // Accept both mobile (artist) and web (artist_name) field names
+    const requesterName = body.requester_name;
+    const requesterEmail = body.requester_email;
+    const songTitle = body.song_title;
+    const artistName = body.artist_name || body.artist;
+    const message = body.message;
+    const stationId = body.station_id ? parseInt(body.station_id) : null;
 
-    if (!station_id || !requester_name || !song_title || !artist_name) {
+    if (!requesterName || !songTitle || !artistName) {
       return NextResponse.json(
-        { success: false, message: 'Missing required fields' },
+        { success: false, message: 'requester_name, song_title, and artist_name are required' },
         { status: 400 }
       );
     }
 
-    await query(
-      `INSERT INTO song_requests (station_id, requester_name, requester_email, song_title, artist_name, message)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [station_id, requester_name, requester_email, song_title, artist_name, message]
-    );
-
-    return NextResponse.json({
-      success: true,
-      message: 'Song request submitted successfully'
+    const songRequest = await prisma.songRequest.create({
+      data: {
+        requesterName,
+        requesterEmail: requesterEmail || null,
+        songTitle,
+        artistName,
+        message: message || null,
+        stationId: stationId || null,
+      },
     });
+
+    return NextResponse.json({ success: true, data: songRequest, message: 'Song request submitted successfully' });
   } catch (error) {
     console.error('Error creating song request:', error);
-    return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }

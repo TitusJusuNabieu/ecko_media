@@ -1,55 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
-import { Station } from '@/types';
+import { prisma } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
+    const { searchParams } = request.nextUrl;
     const genre = searchParams.get('genre');
     const search = searchParams.get('search');
     const featured = searchParams.get('featured');
 
-    let sql = "SELECT * FROM stations WHERE is_active = 1";
-    const values: any[] = [];
-
-    if (genre) {
-      sql += " AND genre = ?";
-      values.push(genre);
-    }
-
-    if (search) {
-      sql += " AND (name LIKE ? OR description LIKE ?)";
-      values.push(`%${search}%`, `%${search}%`);
-    }
-
-    if (featured !== null) {
-      sql += " AND is_featured = ?";
-      values.push(featured === 'true' ? 1 : 0);
-    }
-
-    sql += " ORDER BY is_featured DESC, listener_count DESC, name ASC";
-
-    const stations = await query<Station>(sql, values);
-
-    // Parse JSON fields
-    stations.forEach(station => {
-      if (typeof station.sub_genres === 'string') {
-        station.sub_genres = JSON.parse(station.sub_genres || '[]');
-      }
-      if (typeof station.social_media === 'string') {
-        station.social_media = JSON.parse(station.social_media || '{}');
-      }
+    const stations = await prisma.station.findMany({
+      where: {
+        isActive: true,
+        ...(genre ? { genre } : {}),
+        ...(featured !== null ? { isFeatured: featured === 'true' } : {}),
+        ...(search
+          ? {
+              OR: [
+                { name: { contains: search, mode: 'insensitive' } },
+                { description: { contains: search, mode: 'insensitive' } },
+              ],
+            }
+          : {}),
+      },
+      orderBy: [{ isFeatured: 'desc' }, { listenerCount: 'desc' }, { name: 'asc' }],
     });
 
-    return NextResponse.json({
-      success: true,
-      data: stations
-    });
+    return NextResponse.json({ success: true, data: stations });
   } catch (error) {
     console.error('Error fetching stations:', error);
-    return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }

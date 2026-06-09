@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { verifyAuth } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 
@@ -10,10 +10,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
-    const users = await query(`
-      SELECT id, email, name, avatar, role, created_at, updated_at
-      FROM users ORDER BY created_at DESC
-    `);
+    const users = await prisma.user.findMany({
+      select: { id: true, email: true, name: true, avatar: true, role: true, createdAt: true, updatedAt: true },
+      orderBy: { createdAt: 'desc' },
+    });
 
     return NextResponse.json({ success: true, data: users });
   } catch (error) {
@@ -29,38 +29,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { name, email, password, role, avatar } = body;
+    const { name, email, password, role, avatar } = await request.json();
 
     if (!name || !email || !password) {
-      return NextResponse.json(
-        { success: false, message: 'Name, email, and password are required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, message: 'Name, email, and password are required' }, { status: 400 });
     }
 
-    // Check if email already exists
-    const existingUsers = await query('SELECT id FROM users WHERE email = ?', [email]);
-    if (existingUsers.length > 0) {
-      return NextResponse.json(
-        { success: false, message: 'Email already exists' },
-        { status: 400 }
-      );
+    const existing = await prisma.user.findUnique({ where: { email } });
+    if (existing) {
+      return NextResponse.json({ success: false, message: 'Email already exists' }, { status: 400 });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(password, 10);
 
-    const result: any = await query(
-      `INSERT INTO users (name, email, password_hash, role, avatar, created_at, updated_at) 
-       VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
-      [name, email, hashedPassword, role || 'editor', avatar || null]
-    );
-
-    return NextResponse.json({
-      success: true,
-      message: 'User created successfully',
-      data: { id: result.insertId }
+    const user = await prisma.user.create({
+      data: { name, email, passwordHash, role: role || 'editor', avatar: avatar || null },
+      select: { id: true, email: true, name: true, role: true },
     });
+
+    return NextResponse.json({ success: true, message: 'User created successfully', data: user });
   } catch (error) {
     console.error('Error creating user:', error);
     return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
@@ -74,28 +61,20 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { id, email, name, role, password } = body;
+    const { id, email, name, role, password } = await request.json();
 
-    let sql = 'UPDATE users SET email = ?, name = ?, role = ?';
-    const values: any[] = [email, name, role];
-
+    const updateData: any = { email, name, role };
     if (password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      sql += ', password_hash = ?';
-      values.push(hashedPassword);
+      updateData.passwordHash = await bcrypt.hash(password, 10);
     }
 
-  sql += ', updated_at = NOW() WHERE id = ?';
-  values.push(id);
+    await prisma.user.update({ where: { id: parseInt(id) }, data: updateData });
 
-  await query(sql, values);
-
-  return NextResponse.json({ success: true, message: 'User updated successfully' });
-} catch (error) {
-  console.error('Error updating user:', error);
-  return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
-}
+    return NextResponse.json({ success: true, message: 'User updated successfully' });
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
+  }
 }
 
 export async function DELETE(request: NextRequest) {
@@ -105,14 +84,14 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
+    const id = request.nextUrl.searchParams.get('id');
+    if (!id) return NextResponse.json({ success: false, message: 'ID required' }, { status: 400 });
 
-    if (parseInt(id!) === auth.userId) {
+    if (parseInt(id) === auth.userId) {
       return NextResponse.json({ success: false, message: 'Cannot delete your own account' }, { status: 400 });
     }
 
-    await query('DELETE FROM users WHERE id = ?', [id]);
+    await prisma.user.delete({ where: { id: parseInt(id) } });
 
     return NextResponse.json({ success: true, message: 'User deleted successfully' });
   } catch (error) {
