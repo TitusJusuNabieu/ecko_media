@@ -214,9 +214,7 @@ export default function AdminArticlesPage() {
                       </td>
                       <td className="p-4">
                         <Badge variant="outline">
-                          {article.category_id === 1 ? 'News' : 
-                           article.category_id === 2 ? 'Testimonies' :
-                           article.category_id === 3 ? 'Events' : 'General'}
+                          {article.category?.name || 'General'}
                         </Badge>
                       </td>
                       <td className="p-4">

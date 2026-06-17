@@ -11,8 +11,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Ecko Media - 104.3 FM — Connecting Voices from Bo, Sierra Leone",
-  description: "Ecko Media on 104.3 FM. A Christian radio station broadcasting uplifting music, programs, and career opportunities from Bo, Sierra Leone.",
+  title: "Ecko Media - 104.3 FM — Connecting Voices from Freetown, Sierra Leone",
+  description: "Ecko Media 104.3 FM. An independent media house broadcasting news, talk shows, and community programs from Freetown, Sierra Leone.",
 };
 
 export default function RootLayout({

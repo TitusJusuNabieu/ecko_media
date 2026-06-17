@@ -57,7 +57,7 @@ export default function NotFound() {
 
         <div className="mt-12 pt-8 border-t border-white/10">
           <p className="text-white/60 text-sm">
-            Ecko Media • Bo, Sierra Leone 🇸🇱
+            Ecko Media • Freetown, Sierra Leone 🇸🇱
           </p>
         </div>
       </div>

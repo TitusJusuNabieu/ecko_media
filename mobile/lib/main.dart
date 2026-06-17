@@ -21,7 +21,7 @@ class EckoMediaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Ecko Media 97.7 FM',
+      title: 'Ecko Media 104.3 FM',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       home: const SplashScreen(),

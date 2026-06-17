@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../models/program.dart';
+import '../services/api_service.dart';
 
 class ScheduleScreen extends StatefulWidget {
   const ScheduleScreen({super.key});
@@ -10,78 +11,42 @@ class ScheduleScreen extends StatefulWidget {
 }
 
 class _ScheduleScreenState extends State<ScheduleScreen> {
-  String _selectedDay = 'Monday';
+  final ApiService _apiService = ApiService();
+  List<Program> _allPrograms = [];
+  bool _isLoading = true;
+
+  static String _todayName() {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return days[DateTime.now().weekday % 7];
+  }
+
+  late String _selectedDay = _todayName();
 
   final List<String> _days = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-    'Sunday',
+    'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
   ];
 
-  // TODO: Replace with API call
-  final Map<String, List<Program>> _schedule = {
-    'Monday': [
-      Program(
-        id: '1',
-        title: 'Morning Glory',
-        host: 'Pastor John',
-        startTime: '06:00',
-        endTime: '08:00',
-        description: 'Start your day with inspiring worship and devotion',
-        day: 'Monday',
-        category: 'Worship',
-      ),
-      Program(
-        id: '2',
-        title: 'Midday Worship',
-        host: 'Various Artists',
-        startTime: '12:00',
-        endTime: '14:00',
-        description: 'Contemporary Christian music for your lunch break',
-        day: 'Monday',
-        category: 'Music',
-      ),
-      Program(
-        id: '3',
-        title: 'Evening Devotion',
-        host: 'Rev. Sarah',
-        startTime: '18:00',
-        endTime: '20:00',
-        description: 'Deep biblical teaching and prayer',
-        day: 'Monday',
-        category: 'Teaching',
-      ),
-    ],
-    'Sunday': [
-      Program(
-        id: '4',
-        title: 'Sunday Morning Service',
-        host: 'Pastor John Smith',
-        startTime: '10:00',
-        endTime: '12:00',
-        description: 'Live broadcast of our Sunday worship service',
-        day: 'Sunday',
-        category: 'Service',
-      ),
-      Program(
-        id: '5',
-        title: 'Gospel Hour',
-        host: 'Various',
-        startTime: '14:00',
-        endTime: '16:00',
-        description: 'Classic and contemporary gospel music',
-        day: 'Sunday',
-        category: 'Music',
-      ),
-    ],
-  };
+  @override
+  void initState() {
+    super.initState();
+    _loadPrograms();
+  }
+
+  Future<void> _loadPrograms() async {
+    final programs = await _apiService.fetchPrograms();
+    if (mounted) {
+      setState(() {
+        _allPrograms = programs;
+        _isLoading = false;
+      });
+    }
+  }
 
   List<Program> get _currentDayPrograms {
-    return _schedule[_selectedDay] ?? [];
+    final dayPrograms = _allPrograms.where((p) => p.hasDay(_selectedDay)).toList();
+    dayPrograms.sort((a, b) =>
+        a.getStartTimeForDay(_selectedDay).compareTo(b.getStartTimeForDay(_selectedDay)));
+    return dayPrograms;
   }
 
   @override
@@ -106,12 +71,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: ChoiceChip(
-                    label: Text(day),
+                    label: Text(day.substring(0, 3)),
                     selected: isSelected,
                     onSelected: (selected) {
-                      setState(() {
-                        _selectedDay = day;
-                      });
+                      setState(() => _selectedDay = day);
                     },
                     selectedColor: AppColors.gold,
                     backgroundColor: AppColors.white,
@@ -132,39 +95,37 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
           // Programs List
           Expanded(
-            child: _currentDayPrograms.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.schedule,
-                          size: 64,
-                          color: AppColors.mediumGray,
+            child: _isLoading
+                ? Center(child: CircularProgressIndicator(color: AppColors.gold))
+                : _currentDayPrograms.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.schedule, size: 64, color: AppColors.mediumGray),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No programs for $_selectedDay',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(color: AppColors.darkGray),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Check another day',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No programs scheduled',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: AppColors.darkGray,
-                              ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Check back for updates',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    itemCount: _currentDayPrograms.length,
-                    itemBuilder: (context, index) {
-                      final program = _currentDayPrograms[index];
-                      return _buildProgramCard(program);
-                    },
-                  ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        itemCount: _currentDayPrograms.length,
+                        itemBuilder: (context, index) {
+                          return _buildProgramCard(_currentDayPrograms[index]);
+                        },
+                      ),
           ),
         ],
       ),
@@ -172,6 +133,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   }
 
   Widget _buildProgramCard(Program program) {
+    final start = program.getStartTimeForDay(_selectedDay);
+    final end = program.getEndTimeForDay(_selectedDay);
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: InkWell(
@@ -184,8 +148,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             children: [
               // Time Badge
               Container(
-                width: 70,
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                width: 72,
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
                 decoration: BoxDecoration(
                   color: AppColors.gold.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
@@ -194,28 +158,26 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 child: Column(
                   children: [
                     Text(
-                      program.startTime,
+                      start,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: AppColors.deepNavy,
                       ),
+                      textAlign: TextAlign.center,
                     ),
-                    Text(
-                      'to',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: AppColors.darkGray,
+                    if (end.isNotEmpty) ...[
+                      Text('to', style: TextStyle(fontSize: 10, color: AppColors.darkGray)),
+                      Text(
+                        end,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.deepNavy,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                    ),
-                    Text(
-                      program.endTime,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.deepNavy,
-                      ),
-                    ),
+                    ],
                   ],
                 ),
               ),
@@ -230,38 +192,33 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: Text(
-                            program.title,
-                            style: Theme.of(context).textTheme.titleMedium,
+                          child: Text(program.title, style: Theme.of(context).textTheme.titleMedium),
+                        ),
+                        if (program.category.isNotEmpty) _buildCategoryBadge(program.category),
+                      ],
+                    ),
+                    if (program.host.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.person_outline, size: 16, color: AppColors.gold),
+                          const SizedBox(width: 4),
+                          Text(
+                            program.host,
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.gold),
                           ),
-                        ),
-                        _buildCategoryBadge(program.category),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.person_outline,
-                          size: 16,
-                          color: AppColors.gold,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          program.host,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: AppColors.gold,
-                              ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      program.description,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                        ],
+                      ),
+                    ],
+                    if (program.description.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        program.description,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -281,16 +238,15 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       ),
       child: Text(
         category,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: AppColors.deepNavy,
-        ),
+        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.deepNavy),
       ),
     );
   }
 
   void _showProgramDetails(Program program) {
+    final start = program.getStartTimeForDay(_selectedDay);
+    final end = program.getEndTimeForDay(_selectedDay);
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -315,53 +271,37 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            Text(
-              program.title,
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(Icons.person, size: 20, color: AppColors.gold),
-                const SizedBox(width: 8),
-                Text(
-                  program.host,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppColors.gold,
-                      ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Icon(Icons.access_time, size: 20, color: AppColors.darkGray),
-                const SizedBox(width: 8),
-                Text(
-                  '${program.startTime} - ${program.endTime}',
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              program.description,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    height: 1.6,
-                  ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                  // Navigate to radio player
-                },
-                icon: const Icon(Icons.play_arrow),
-                label: const Text('Listen Now'),
+            Text(program.title, style: Theme.of(context).textTheme.headlineSmall),
+            if (program.host.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.person, size: 20, color: AppColors.gold),
+                  const SizedBox(width: 8),
+                  Text(program.host,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.gold)),
+                ],
               ),
-            ),
+            ],
+            if (start.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Icon(Icons.access_time, size: 20, color: AppColors.darkGray),
+                  const SizedBox(width: 8),
+                  Text(
+                    end.isNotEmpty ? '$start - $end' : start,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                ],
+              ),
+            ],
+            if (program.description.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Text(program.description,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.6)),
+            ],
+            const SizedBox(height: 24),
           ],
         ),
       ),

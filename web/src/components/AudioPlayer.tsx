@@ -118,7 +118,7 @@ export function AudioPlayer({ streamUrl, stationName, onPlayStateChange }: Audio
             </div>
             <div className="hidden sm:block">
               <p className="font-bold text-sm">{stationName}</p>
-              <p className="text-xs text-white/80">104.3 FM • Bo, Sierra Leone</p>
+              <p className="text-xs text-white/80">104.3 FM • Freetown, Sierra Leone</p>
             </div>
           </div>
 

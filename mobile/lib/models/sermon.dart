@@ -21,14 +21,14 @@ class Sermon {
 
   factory Sermon.fromJson(Map<String, dynamic> json) {
     return Sermon(
-      id: json['id'] ?? '',
-      title: json['title'] ?? '',
-      preacher: json['preacher'] ?? '',
-      date: json['date'] ?? '',
-      thumbnailUrl: json['thumbnailUrl'] ?? '',
-      audioUrl: json['audioUrl'] ?? '',
-      description: json['description'] ?? '',
-      duration: json['duration'] ?? '',
+      id: json['id']?.toString() ?? '',
+      title: (json['title'] ?? '').toString(),
+      preacher: (json['preacher'] ?? json['speaker'] ?? '').toString(),
+      date: (json['date'] ?? json['sermonDate'] ?? '').toString(),
+      thumbnailUrl: (json['thumbnailUrl'] ?? json['imageUrl'] ?? '').toString(),
+      audioUrl: (json['audioUrl'] ?? '').toString(),
+      description: (json['description'] ?? '').toString(),
+      duration: json['duration']?.toString() ?? '',
     );
   }
 }

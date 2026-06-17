@@ -30,46 +30,42 @@ export default function AboutPage() {
   ];
 
   const branches = [
-    { name: 'Bo — Headquarters', location: 'Southern Province', status: 'Active' },
-    { name: 'Kono', location: 'Eastern Province', status: 'Active' },
-    { name: 'Makeni', location: 'Northern Province', status: 'Active' },
-    { name: 'Waterloo', location: 'Western Area', status: 'Coming Soon' },
-    { name: 'Kenema', location: 'Eastern Province', status: 'Coming Soon' },
+    { name: 'Freetown — Headquarters', location: '48 Siaka Stevens Street', status: 'Active' },
   ];
 
   const services = [
     {
       icon: Radio,
-      title: 'Live Broadcasting',
-      description: 'Round-the-clock FM radio broadcasting on 97.7 FM from Bo, reaching Sierra Leoneans across the country and online.',
+      title: 'Radio — 104.3 FM',
+      description: 'Live FM broadcasting on 104.3 FM from Freetown — morning shows, talk programs, music, and news starting 7:30 AM Mon–Fri.',
       color: 'text-primary',
       bg: 'bg-primary/10',
     },
     {
-      icon: Mic2,
-      title: 'Original Programs',
-      description: 'Inspiring talk shows, devotionals, news, music programs, and community discussions crafted for Sierra Leonean audiences.',
+      icon: Newspaper,
+      title: 'Newspaper',
+      description: 'In-depth newspaper review coverage — local, national, and international stories told with accuracy and responsibility.',
       color: 'text-blue-500',
       bg: 'bg-blue-500/10',
     },
     {
-      icon: Newspaper,
-      title: 'News & Journalism',
-      description: 'Credible local and national news coverage, keeping communities informed with accurate, responsible reporting.',
-      color: 'text-green-500',
-      bg: 'bg-green-500/10',
+      icon: Mic2,
+      title: 'Talk Shows & Community',
+      description: 'Governance reviews, cultural programs, community debates — every voice regardless of status, region, or political ideology.',
+      color: 'text-orange-500',
+      bg: 'bg-orange-500/10',
     },
     {
       icon: Tv2,
       title: 'Online Streaming',
-      description: 'Listen anywhere in the world through our online stream and mobile app — bringing Ecko Media to the diaspora.',
-      color: 'text-purple-500',
-      bg: 'bg-purple-500/10',
+      description: 'From live 104.3 FM broadcasts to online streaming — bringing Ecko Media to the Sierra Leonean diaspora worldwide.',
+      color: 'text-green-500',
+      bg: 'bg-green-500/10',
     },
   ];
 
   const aboutText = ministryInfo?.about ||
-    'Ecko Media 97.7 FM is a pioneering Christian radio station in Sierra Leone, founded in September 2003. Licensed and regulated by the Independent Media Commission (IMC), we have spent over two decades delivering credible news, inspiring programs, and quality entertainment to Sierra Leoneans. Headquartered in Bo with active branches in Kono and Makeni, our signal and online stream reach listeners across the nation and the diaspora. We are committed to serving our communities with integrity, reflecting the values of faith, excellence, and development in everything we broadcast.';
+    'We connect voices as an independent media house based in the heart of Freetown, 48 Siaka Stevens Street. Our goal is to strive for excellence, not to compete, meeting the demands of daily challenges. We connect every voice regardless of status, region, political ideology and more. Our morning live sessions start at 7:30 AM daily Mon–Fri with many more programs throughout the day. From live 104.3 FM broadcasts to newspaper and online streaming, Ecko Media keeps Sierra Leone informed, inspired, and connected. Our motto is connecting voices, and every voice on Ecko counts.';
 
   return (
     <div className="min-h-screen pt-20 pb-24">
@@ -80,10 +76,10 @@ export default function AboutPage() {
           <div className="max-w-4xl mx-auto text-center">
             <Badge className="mb-6 bg-primary/20 text-primary border-primary/30 text-base px-4 py-2">About Us</Badge>
             <h1 className="text-5xl md:text-7xl font-bold mb-6">
-              Sierra Leone's <span className="text-primary">Trusted Voice</span>
+              Sierra Leone's <span className="text-primary">Connecting Voice</span>
             </h1>
             <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed">
-              Ecko Media 97.7 FM — Bo, Sierra Leone. Broadcasting since 2003. 🇸🇱
+              Ecko Media 104.3 FM — Freetown, Sierra Leone. Connecting Voices. 🇸🇱
             </p>
           </div>
         </div>
@@ -142,7 +138,7 @@ export default function AboutPage() {
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-muted-foreground leading-relaxed">
-                  {ministryInfo?.mission || 'To reach every corner of Sierra Leone with credible news, inspiring programming, and the transformative power of the Gospel — on air and online, 24 hours a day.'}
+                  {ministryInfo?.mission || 'To connect every voice in Sierra Leone regardless of status, region, or political ideology — striving for excellence in media, not competition.'}
                 </p>
               </CardContent>
             </Card>
@@ -158,7 +154,7 @@ export default function AboutPage() {
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-muted-foreground leading-relaxed">
-                  {ministryInfo?.vision || 'To be the most trusted and far-reaching Christian media house in West Africa — a platform that informs, uplifts, and unites communities.'}
+                  {ministryInfo?.vision || 'To be the most trusted independent media house in Sierra Leone — delivering radio, newspaper, and digital content that informs, inspires, and unites the nation.'}
                 </p>
               </CardContent>
             </Card>
@@ -174,7 +170,7 @@ export default function AboutPage() {
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-muted-foreground leading-relaxed">
-                  Faith, Integrity, Excellence, and Community. Every broadcast reflects our commitment to responsible journalism and quality Christian content.
+                  Excellence, Integrity, Inclusion, and Community. Every broadcast and every story reflects our commitment to responsible journalism and giving every voice a platform.
                 </p>
               </CardContent>
             </Card>
@@ -258,7 +254,7 @@ export default function AboutPage() {
               Tune In. Connect. Stay Informed.
             </h2>
             <p className="text-xl text-white/90">
-              Listen to Ecko Media 97.7 FM live or reach out — we love hearing from our community.
+              Listen to Ecko Media 104.3 FM live or reach out — every voice counts and we love hearing from you.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" className="bg-primary text-secondary hover:bg-primary/90 text-lg px-10 py-7 font-bold" asChild>

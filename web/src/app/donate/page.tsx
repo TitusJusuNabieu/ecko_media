@@ -108,7 +108,7 @@ export default function DonatePage() {
             <Heart className="h-16 w-16 mx-auto mb-4" />
             <h1 className="text-4xl md:text-5xl font-bold mb-4">Support Ecko Media</h1>
             <p className="text-xl text-green-100 max-w-2xl mx-auto">
-              Your support keeps 97.7 FM on air — helping us broadcast quality Christian programming across Sierra Leone 24/7
+              Your support keeps 104.3 FM on air — helping us broadcast news, talk shows, and community programs across Sierra Leone 24/7
             </p>
           </div>
         </div>
@@ -133,7 +133,7 @@ export default function DonatePage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600">
-                Fund quality Christian programs and content creation
+                Fund quality programs, content creation, and community journalism
               </p>
             </CardContent>
           </Card>

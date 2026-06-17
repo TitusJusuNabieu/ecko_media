@@ -44,28 +44,9 @@ export default function HomePage() {
     }
   };
 
-  const primaryStation = stations.find(s => s.name.toLowerCase().includes('ecko')) || {
-    id: 1,
-    name: 'Ecko Media',
-    slug: 'ecko-media',
-    description: 'Your trusted Christian media house in Bo, Sierra Leone',
-    stream_url: 'http://stream.eckomedia.sl:8000/live.mp3',
-    genre: 'Christian',
-    language: 'English',
-    listener_count: 0,
-    is_active: true,
-    is_featured: true,
-  } as Station;
+  const primaryStation = stations.find(s => s.name.toLowerCase().includes('ecko')) || stations[0] || null;
 
   const handlePlayClick = () => setShowPlayer(true);
-
-  const todayPrograms = [
-    { time: '6:00 AM', name: 'Morning Glory', host: 'Mary Bangura' },
-    { time: '9:00 AM', name: 'The Word Today', host: 'Rev. Samuel Kamara' },
-    { time: '12:00 PM', name: 'Midday Praise', host: 'Grace Koroma' },
-    { time: '3:00 PM', name: 'Youth Connection', host: 'Emmanuel Sesay' },
-    { time: '6:00 PM', name: 'Evening Devotion', host: 'Pastor Johnson' },
-  ];
 
   const getTodayPrograms = () => {
     const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
@@ -82,34 +63,34 @@ export default function HomePage() {
     });
   };
 
-  const displayPrograms = programs.length > 0 ? getTodayPrograms() : todayPrograms;
+  const displayPrograms = getTodayPrograms();
 
   const offerings = [
     {
       icon: Radio,
-      title: 'Live FM Radio',
-      description: 'Tune in to 97.7 FM anywhere across Sierra Leone — live, clear, and on air 24 hours a day, 7 days a week.',
+      title: 'Radio — 104.3 FM',
+      description: 'Tune in to 104.3 FM from Freetown — live, clear, and on air with morning shows, talk programs, and more starting 7:30 AM daily.',
       iconColor: 'text-primary',
       bgColor: 'bg-primary/10',
     },
     {
       icon: Newspaper,
-      title: 'News & Current Affairs',
-      description: 'Credible local and national news, community announcements, and current affairs reported with integrity.',
+      title: 'Newspaper',
+      description: 'Credible local and national news, newspaper reviews, and current affairs — keeping every Sierra Leonean voice informed.',
       iconColor: 'text-blue-500',
       bgColor: 'bg-blue-500/10',
     },
     {
       icon: Mic2,
-      title: 'Christian Programs',
-      description: 'Daily devotionals, sermons, gospel music, and faith-based talk shows crafted for Sierra Leonean audiences.',
-      iconColor: 'text-purple-500',
-      bgColor: 'bg-purple-500/10',
+      title: 'Talk & Community',
+      description: 'Governance reviews, cultural shows, community discussions — every voice counts regardless of status, region, or ideology.',
+      iconColor: 'text-orange-400',
+      bgColor: 'bg-orange-400/10',
     },
     {
       icon: Globe,
       title: 'Online Streaming',
-      description: "Can't reach the FM signal? Stream Ecko Media live online — connecting Sierra Leoneans at home and in the diaspora.",
+      description: 'From live 104.3 FM broadcasts to online streaming — Ecko Media keeps Sierra Leone informed, inspired, and connected worldwide.',
       iconColor: 'text-green-500',
       bgColor: 'bg-green-500/10',
     },
@@ -134,7 +115,7 @@ export default function HomePage() {
                   <div className="w-3 h-3 bg-red-500 rounded-full animate-ping absolute"></div>
                   <div className="w-3 h-3 bg-red-500 rounded-full"></div>
                 </div>
-                <span className="font-bold text-white text-sm tracking-wider">LIVE ON AIR • 97.7 FM</span>
+                <span className="font-bold text-white text-sm tracking-wider">LIVE ON AIR • 104.3 FM</span>
                 <Radio className="w-5 h-5 text-red-500" />
               </div>
             </div>
@@ -148,16 +129,17 @@ export default function HomePage() {
 
               <div className="flex items-center justify-center gap-4 text-2xl md:text-3xl font-bold text-white/90">
                 <div className="h-1 w-12 bg-gradient-to-r from-transparent to-primary"></div>
-                <span>97.7 FM</span>
+                <span>104.3 FM</span>
                 <div className="h-1 w-12 bg-gradient-to-l from-transparent to-primary"></div>
               </div>
 
               <p className="text-xl md:text-2xl text-white/80 max-w-2xl mx-auto leading-relaxed">
-                Sierra Leone's trusted Christian media house — informing, inspiring, and connecting communities
-                <span className="block mt-2 text-lg text-white/60">Since 2003 • Bo, Sierra Leone 🇸🇱</span>
+                Connecting Voices — an independent media house from the heart of Freetown, Sierra Leone
+                <span className="block mt-2 text-lg text-white/60">48 Siaka Stevens Street • Freetown 🇸🇱</span>
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
+                {primaryStation && (
                 <Button
                   size="lg"
                   className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-secondary text-lg px-10 py-7 shadow-2xl hover:shadow-primary/50 transition-all transform hover:scale-105 border-0 font-bold"
@@ -166,6 +148,7 @@ export default function HomePage() {
                   <Play className="w-6 h-6 mr-3 fill-current" />
                   Listen Live Now
                 </Button>
+                )}
                 <Button
                   size="lg"
                   variant="outline"
@@ -183,7 +166,7 @@ export default function HomePage() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-center gap-2">
                     <Users className="w-5 h-5 text-primary" />
-                    <span className="text-3xl font-bold text-white">{primaryStation.listener_count || 247}</span>
+                    <span className="text-3xl font-bold text-white">{primaryStation?.listener_count || '—'}</span>
                   </div>
                   <p className="text-sm text-white/60">Listening Now</p>
                 </div>
@@ -214,7 +197,7 @@ export default function HomePage() {
       </section>
 
       {/* Audio Player */}
-      {showPlayer && (
+      {showPlayer && primaryStation && (
         <AudioPlayer
           streamUrl={primaryStation.stream_url}
           stationName={primaryStation.name}
@@ -232,7 +215,7 @@ export default function HomePage() {
               <span className="block text-primary">Media Partner</span>
             </h2>
             <p className="text-muted-foreground text-lg">
-              From live FM broadcasts to online streaming — Ecko Media keeps Sierra Leone informed, inspired, and connected
+              From live 104.3 FM broadcasts to newspaper and online streaming — Ecko Media keeps Sierra Leone informed, inspired, and connected. Every voice on Ecko counts.
             </p>
           </div>
 
@@ -266,7 +249,7 @@ export default function HomePage() {
               Support Ecko Media
             </h2>
             <p className="text-xl md:text-2xl text-white/90 max-w-2xl mx-auto">
-              Help us keep 97.7 FM on air — your support keeps our signal strong and our community connected
+              Help us keep 104.3 FM on air — your support keeps our signal strong and every voice in Sierra Leone connected
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Button size="lg" className="bg-primary text-secondary hover:bg-primary/90 text-lg px-10 py-7 font-bold" asChild>
@@ -305,7 +288,7 @@ export default function HomePage() {
             </div>
 
             <div className="grid gap-4">
-              {displayPrograms.map((program, i) => (
+              {displayPrograms.length > 0 ? displayPrograms.map((program, i) => (
                 <Card key={i} className="group hover:shadow-lg transition-all hover:border-primary/50">
                   <CardContent className="p-6">
                     <div className="flex items-center gap-6">
@@ -330,7 +313,11 @@ export default function HomePage() {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+              )) : (
+                <Card className="p-8 text-center">
+                  <p className="text-muted-foreground">No programs scheduled for today. <Link href="/programs" className="text-primary underline">View full schedule</Link></p>
+                </Card>
+              )}
             </div>
           </div>
         </div>

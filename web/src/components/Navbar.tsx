@@ -40,7 +40,7 @@ export function Navbar() {
           <Link href="/" className="flex items-center gap-3 group">
             <div className="relative w-14 h-14 flex-shrink-0">
               <Image
-                src="/ecko-logo.png"
+                src="/ecko-logo.svg"
                 alt="Ecko Media Logo"
                 fill
                 className="object-contain rounded-full shadow-lg group-hover:scale-110 transition-transform duration-300"
@@ -56,7 +56,7 @@ export function Navbar() {
               <span className={`text-xs transition-colors ${
                 isScrolled ? 'text-muted-foreground' : 'text-primary'
               }`}>
-                97.7 FM • Bo, SL
+                104.3 FM • Freetown, SL
               </span>
             </div>
           </Link>

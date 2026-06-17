@@ -171,7 +171,7 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                   ),
                   child: const Text(
-                    '97.7 FM',
+                    '104.3 FM',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 24,
@@ -276,7 +276,7 @@ class _SplashScreenState extends State<SplashScreen>
                 delay: const Duration(milliseconds: 1400),
                 duration: const Duration(milliseconds: 800),
                 child: Text(
-                  'Bo, Sierra Leone 🇸🇱',
+                  'Freetown, Sierra Leone 🇸🇱',
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 12,

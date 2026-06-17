@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color gold = Color(0xFF702088);
-  static const Color deepNavy = Color(0xFF2C1343);
+  static const Color gold = Color(0xFFE86004);      // Ecko orange (primary)
+  static const Color deepNavy = Color(0xFF0C1445);  // Deep navy
   static const Color white = Color(0xFFFFFFFF);
   static const Color lightGray = Color(0xFFF5F5F5);
   static const Color mediumGray = Color(0xFFE0E0E0);
   static const Color darkGray = Color(0xFF757575);
-  static const Color accent = Color(0xFFEFE4F8);
+  static const Color accent = Color(0xFFFFF3E8);    // Light orange tint
 }
 
 class AppTheme {
-  // Primary color constant for easy access
-  static const Color primaryColor = Color(0xFF702088); // Ecko purple
-  static const Color secondaryColor = Color(0xFF2C1343); // Deep purple
-  static const Color accentColor = Color(0xFF702088); // Ecko purple
+  static const Color primaryColor = Color(0xFFE86004);  // Ecko orange
+  static const Color secondaryColor = Color(0xFF0C1445); // Deep navy
+  static const Color accentColor = Color(0xFFE86004);   // Ecko orange
   
   static ThemeData get lightTheme {
     return ThemeData(

@@ -108,11 +108,9 @@ export default function ArticlePage() {
           <CardContent className="p-8 md:p-12">
             {/* Category and Status */}
             <div className="flex items-center gap-2 mb-4">
-              <Badge variant="secondary">
-                {article.category_id === 1 ? 'News' : 
-                 article.category_id === 2 ? 'Testimonies' :
-                 article.category_id === 3 ? 'Events' : 'Announcements'}
-              </Badge>
+              {article.category?.name && (
+                <Badge variant="secondary">{article.category.name}</Badge>
+              )}
               {article.status === 'published' && (
                 <Badge variant="default">Published</Badge>
               )}

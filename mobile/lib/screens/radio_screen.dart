@@ -47,7 +47,7 @@ class RadioScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'RADIO NEWSONG',
+                            'ECKO MEDIA',
                             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                   color: AppColors.white,
                                   fontWeight: FontWeight.bold,

@@ -22,7 +22,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       image: 'assets/images/ecko_media_logo.png',
       title: 'Listen to Ecko Media',
       description:
-          'Tune in to 97.7 FM and enjoy gospel music, inspiring sermons, and uplifting programs 24/7.',
+          'Tune in to 104.3 FM and enjoy news, talk shows, community programs, and entertainment — starting 7:30 AM daily.',
       color: AppTheme.primaryColor,
     ),
     OnboardingPage(
@@ -34,9 +34,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     ),
     OnboardingPage(
       icon: Icons.mic,
-      title: 'Access Sermons & Articles',
+      title: 'Reels, Videos & Articles',
       description:
-          'Listen to powerful sermons, read inspiring articles, and grow in your faith journey.',
+          'Watch reels and videos from our broadcasts, read articles, and stay informed on what matters in Sierra Leone.',
       color: const Color(0xFF8B5CF6),
     ),
     OnboardingPage(
@@ -44,7 +44,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       image: 'assets/images/ecko_media_logo.png',
       title: 'Connect with Us',
       description:
-          'Request songs, send shoutouts, contact the ministry, and support our mission through donations.',
+          'Request songs, send shoutouts, contact us, and support our work through donations.',
       color: const Color(0xFFEF4444),
     ),
   ];

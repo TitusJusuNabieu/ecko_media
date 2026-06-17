@@ -18,18 +18,20 @@ class Config {
   static const String appName = 'Ecko Media';
   static const String appVersion = '1.0.0';
   
-  // Ministry Details
+  // Media House Details
   static const String ministryName = 'Ecko Media';
-  static const String radioFrequency = '97.7 FM';
-  static const String location = 'Bo, Sierra Leone';
-  
+  static const String radioFrequency = '104.3 FM';
+  static const String location = 'Freetown, Sierra Leone';
+  static const String address = '48 Siaka Stevens Street, Freetown, Sierra Leone';
+  static const String tagline = 'Connecting Voices';
+
   // Contact Information
-  static const String supportEmail = 'info@eckomedia.sl';
-  static const String supportPhone = '+232 78 051555';
-  static const String supportPhone2 = '+232 99 051555';
+  static const String supportEmail = 'eckomedia3@gmail.com';
+  static const String supportPhone = '076946946';
+  static const String supportPhone2 = '+13464936503';
   
   // Social Media
-  static const String facebookUrl = 'https://facebook.com/eckomedia';
+  static const String facebookUrl = 'https://www.facebook.com/eckomedia232';
   static const String instagramUrl = 'https://instagram.com/eckomedia';
   static const String twitterUrl = 'https://twitter.com/eckomedia';
   static const String youtubeUrl = 'https://youtube.com/@eckomedia';
@@ -40,5 +42,5 @@ class Config {
   static const String afrimoneyNumber = 'XXX XXX XXXX';
   
   // Streaming (update with your AzuraCast URL)
-  static const String defaultStreamUrl = 'http://your-azuracast-ip:8000/radio.mp3';
+  static const String defaultStreamUrl = 'http://stream.eckomedia.sl:8000/live.mp3';
 }

@@ -1,14 +1,18 @@
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
+import '../config.dart';
+import 'api_service.dart';
 
 class RadioService with ChangeNotifier {
   final AudioPlayer _audioPlayer = AudioPlayer();
+  final ApiService _apiService = ApiService();
   bool _isPlaying = false;
+  bool _isInitialized = false;
   double _volume = 0.7;
-  String _currentSong = 'Awesome God';
-  String _currentArtist = 'Hillsong Worship';
-  String _currentProgram = 'Morning Glory';
-  String _currentHost = 'Pastor John';
+  String _currentSong = 'Live Stream';
+  String _currentArtist = 'Ecko Media 104.3 FM';
+  String _currentProgram = 'Ecko Media Live';
+  String _currentHost = 'Ecko Media';
 
   AudioPlayer get audioPlayer => _audioPlayer;
   bool get isPlaying => _isPlaying;
@@ -18,12 +22,27 @@ class RadioService with ChangeNotifier {
   String get currentProgram => _currentProgram;
   String get currentHost => _currentHost;
 
-  // TODO: Replace with actual radio stream URL
   Future<void> initialize() async {
+    if (_isInitialized) return;
     try {
-      // Example: await _audioPlayer.setUrl('https://your-radio-stream-url.com/stream');
-      // await _audioPlayer.setUrl('https://example.com/stream'); // Placeholder
+      String streamUrl = Config.defaultStreamUrl;
+
+      final station = await _apiService.fetchCurrentStation();
+      if (station != null) {
+        final apiUrl = station['streamUrl']?.toString();
+        if (apiUrl != null && apiUrl.isNotEmpty) {
+          streamUrl = apiUrl;
+        }
+        final name = station['name']?.toString();
+        if (name != null && name.isNotEmpty) {
+          _currentProgram = name;
+          notifyListeners();
+        }
+      }
+
+      await _audioPlayer.setUrl(streamUrl);
       await _audioPlayer.setVolume(_volume);
+      _isInitialized = true;
     } catch (e) {
       debugPrint('Error initializing radio: $e');
     }
@@ -31,21 +50,23 @@ class RadioService with ChangeNotifier {
 
   Future<void> play() async {
     try {
-      // TODO: Initialize stream URL if not already set
-      // await _audioPlayer.play();
+      if (!_isInitialized) {
+        await initialize();
+      }
+      await _audioPlayer.play();
       _isPlaying = true;
       notifyListeners();
-      
-      // Start fetching now playing info
       _startNowPlayingUpdates();
     } catch (e) {
       debugPrint('Error playing radio: $e');
+      _isPlaying = false;
+      notifyListeners();
     }
   }
 
   Future<void> pause() async {
     try {
-      // await _audioPlayer.pause();
+      await _audioPlayer.pause();
       _isPlaying = false;
       notifyListeners();
     } catch (e) {
@@ -64,8 +85,6 @@ class RadioService with ChangeNotifier {
   }
 
   void _startNowPlayingUpdates() {
-    // TODO: Implement periodic API calls to fetch current track info
-    // This would typically poll every 30-60 seconds
     Future.delayed(const Duration(seconds: 30), () {
       if (_isPlaying) {
         _fetchNowPlayingInfo();
@@ -74,15 +93,16 @@ class RadioService with ChangeNotifier {
     });
   }
 
-  // TODO: Fetch from API
   Future<void> _fetchNowPlayingInfo() async {
     try {
-      // API call to get current track info
-      // final response = await http.get(Uri.parse('$baseUrl/now-playing'));
-      // Update current song, artist, program, and host
-      
-      // Mock update for demonstration
-      // In production, this would be replaced with actual API data
+      final station = await _apiService.fetchCurrentStation();
+      if (station != null) {
+        final name = station['name']?.toString();
+        if (name != null && name.isNotEmpty) {
+          _currentProgram = name;
+          notifyListeners();
+        }
+      }
     } catch (e) {
       debugPrint('Error fetching now playing info: $e');
     }

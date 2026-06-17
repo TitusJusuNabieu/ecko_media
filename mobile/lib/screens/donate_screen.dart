@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
+import '../services/api_service.dart';
 
 class DonateScreen extends StatefulWidget {
   const DonateScreen({super.key});
@@ -13,25 +14,27 @@ class _DonateScreenState extends State<DonateScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _emailController = TextEditingController();
+  final ApiService _apiService = ApiService();
 
-  String _selectedCategory = 'Tithe';
+  String _selectedCategory = 'General Support';
   bool _isProcessing = false;
 
   final List<String> _categories = [
-    'Tithe',
-    'Offering',
-    'Radio Support',
-    'Missions',
-    'Building Project',
+    'General Support',
+    'Equipment Fund',
+    'Operational Costs',
+    'Community Outreach',
+    'Programming',
   ];
 
-  final List<int> _quickAmounts = [10, 25, 50, 100, 250, 500];
+  // Amounts in Sierra Leone Leone (SLL)
+  final List<int> _quickAmounts = [10000, 25000, 50000, 100000, 250000, 500000];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Donate'),
+        title: const Text('Support Us'),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -50,21 +53,17 @@ class _DonateScreenState extends State<DonateScreen> {
               ),
               child: Column(
                 children: [
-                  Icon(
-                    Icons.volunteer_activism,
-                    size: 64,
-                    color: AppColors.gold,
-                  ),
+                  Icon(Icons.volunteer_activism, size: 64, color: AppColors.gold),
                   const SizedBox(height: 16),
                   Text(
-                    'Support the Ministry',
+                    'Support Ecko Media',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           color: AppColors.white,
                         ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Your generosity helps us spread the Gospel',
+                    'Your support keeps us on air 24/7',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: AppColors.white.withOpacity(0.9),
                         ),
@@ -85,10 +84,7 @@ class _DonateScreenState extends State<DonateScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Category Selection
-                    Text(
-                      'Donation Category',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
+                    Text('Donation Purpose', style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 12),
                     Wrap(
                       spacing: 8,
@@ -99,9 +95,7 @@ class _DonateScreenState extends State<DonateScreen> {
                           label: Text(category),
                           selected: isSelected,
                           onSelected: (selected) {
-                            setState(() {
-                              _selectedCategory = category;
-                            });
+                            setState(() => _selectedCategory = category);
                           },
                           selectedColor: AppColors.gold,
                           backgroundColor: AppColors.white,
@@ -119,10 +113,7 @@ class _DonateScreenState extends State<DonateScreen> {
                     const SizedBox(height: 24),
 
                     // Quick Amount Selection
-                    Text(
-                      'Quick Amount',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
+                    Text('Quick Amount (Le)', style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 12),
                     GridView.count(
                       crossAxisCount: 3,
@@ -131,38 +122,27 @@ class _DonateScreenState extends State<DonateScreen> {
                       mainAxisSpacing: 12,
                       crossAxisSpacing: 12,
                       childAspectRatio: 2,
-                      children: _quickAmounts.map((amount) {
-                        return _buildQuickAmountButton(amount);
-                      }).toList(),
+                      children: _quickAmounts.map((amount) => _buildQuickAmountButton(amount)).toList(),
                     ),
 
                     const SizedBox(height: 24),
 
                     // Custom Amount Input
-                    Text(
-                      'Or Enter Custom Amount',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
+                    Text('Or Enter Custom Amount', style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _amountController,
                       keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       decoration: InputDecoration(
-                        hintText: 'Enter amount',
-                        prefixIcon: Icon(Icons.attach_money, color: AppColors.gold),
-                        suffixText: 'USD',
+                        hintText: 'Enter amount in Leones',
+                        prefixIcon: Icon(Icons.money, color: AppColors.gold),
+                        suffixText: 'SLL',
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter an amount';
-                        }
+                        if (value == null || value.isEmpty) return 'Please enter an amount';
                         final amount = int.tryParse(value);
-                        if (amount == null || amount <= 0) {
-                          return 'Please enter a valid amount';
-                        }
+                        if (amount == null || amount <= 0) return 'Please enter a valid amount';
                         return null;
                       },
                     ),
@@ -170,10 +150,7 @@ class _DonateScreenState extends State<DonateScreen> {
                     const SizedBox(height: 24),
 
                     // Email Input (Optional)
-                    Text(
-                      'Email for Receipt (Optional)',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
+                    Text('Email for Receipt (Optional)', style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _emailController,
@@ -183,10 +160,8 @@ class _DonateScreenState extends State<DonateScreen> {
                         prefixIcon: Icon(Icons.email_outlined, color: AppColors.gold),
                       ),
                       validator: (value) {
-                        if (value != null && value.isNotEmpty) {
-                          if (!value.contains('@')) {
-                            return 'Please enter a valid email';
-                          }
+                        if (value != null && value.isNotEmpty && !value.contains('@')) {
+                          return 'Please enter a valid email';
                         }
                         return null;
                       },
@@ -200,21 +175,15 @@ class _DonateScreenState extends State<DonateScreen> {
                       decoration: BoxDecoration(
                         color: AppColors.accent,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: AppColors.gold.withOpacity(0.3),
-                        ),
+                        border: Border.all(color: AppColors.gold.withOpacity(0.3)),
                       ),
                       child: Row(
                         children: [
-                          Icon(
-                            Icons.security,
-                            color: AppColors.deepNavy,
-                            size: 24,
-                          ),
+                          Icon(Icons.info_outline, color: AppColors.deepNavy, size: 24),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'All donations are secure and processed through our payment partner',
+                              'Donations support our broadcast operations, equipment, and community programs.',
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
                           ),
@@ -235,9 +204,7 @@ class _DonateScreenState extends State<DonateScreen> {
                                 width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppColors.deepNavy,
-                                  ),
+                                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.deepNavy),
                                 ),
                               )
                             : const Text('Continue to Payment'),
@@ -246,9 +213,8 @@ class _DonateScreenState extends State<DonateScreen> {
 
                     const SizedBox(height: 16),
 
-                    // Disclaimer
                     Text(
-                      'By proceeding, you agree to our terms and conditions. Tax receipts will be issued for eligible donations.',
+                      'By proceeding, you agree to our terms and conditions.',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontSize: 12,
                             fontStyle: FontStyle.italic,
@@ -266,60 +232,65 @@ class _DonateScreenState extends State<DonateScreen> {
   }
 
   Widget _buildQuickAmountButton(int amount) {
+    final label = amount >= 1000
+        ? 'Le ${(amount / 1000).toStringAsFixed(0)}k'
+        : 'Le $amount';
+
     return ElevatedButton(
       onPressed: () {
-        setState(() {
-          _amountController.text = amount.toString();
-        });
+        setState(() => _amountController.text = amount.toString());
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.white,
         foregroundColor: AppColors.deepNavy,
         side: BorderSide(color: AppColors.gold),
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       child: Text(
-        '\$$amount',
-        style: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 16,
-        ),
+        label,
+        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
       ),
     );
   }
 
   Future<void> _processDonation() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _isProcessing = true;
-    });
+    setState(() => _isProcessing = true);
 
-    // TODO: Integrate with Monime.io or payment gateway
-    // Simulating API call
-    await Future.delayed(const Duration(seconds: 2));
+    final amount = double.parse(_amountController.text);
+    final result = await _apiService.processDonation(
+      category: _selectedCategory,
+      amount: amount,
+      email: _emailController.text.isNotEmpty ? _emailController.text : null,
+      method: 'Orange Money',
+    );
 
-    setState(() {
-      _isProcessing = false;
-    });
-
+    setState(() => _isProcessing = false);
     if (!mounted) return;
 
-    // Show success dialog
+    if (result['success'] == true) {
+      _showSuccessDialog(amount);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message']?.toString() ?? 'Something went wrong. Please try again.'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  void _showSuccessDialog(double amount) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(Icons.check_circle, color: Colors.green, size: 32),
+            const Icon(Icons.check_circle, color: Colors.green, size: 32),
             const SizedBox(width: 12),
             const Text('Thank You!'),
           ],
@@ -329,15 +300,13 @@ class _DonateScreenState extends State<DonateScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Your donation of \$${_amountController.text} for $_selectedCategory has been processed.',
+              'Your donation of Le ${amount.toStringAsFixed(0)} for "$_selectedCategory" has been received.',
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 16),
             Text(
-              'May God bless you abundantly!',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontStyle: FontStyle.italic,
-                  ),
+              'Thank you for supporting Ecko Media 104.3 FM!',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic),
             ),
           ],
         ),

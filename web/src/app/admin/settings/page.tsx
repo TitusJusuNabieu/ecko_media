@@ -48,11 +48,11 @@ export default function AdminSettingsPage() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Frequency</label>
-              <Input defaultValue="97.7 FM" />
+              <Input defaultValue="104.3 FM" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Location</label>
-              <Input defaultValue="Bo, Sierra Leone" />
+              <Input defaultValue="48 Siaka Stevens Street, Freetown, Sierra Leone" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Phone</label>
@@ -60,7 +60,7 @@ export default function AdminSettingsPage() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Email</label>
-              <Input type="email" defaultValue="info@eckomedia.sl" />
+              <Input type="email" defaultValue="eckomedia3@gmail.com" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Website</label>
@@ -69,7 +69,7 @@ export default function AdminSettingsPage() {
           </div>
           <div>
             <label className="block text-sm font-medium mb-2">Tagline</label>
-            <Input defaultValue="Broadcasting the Good News and Reaching the Unreached" />
+            <Input defaultValue="Connecting Voices" />
           </div>
         </CardContent>
       </Card>

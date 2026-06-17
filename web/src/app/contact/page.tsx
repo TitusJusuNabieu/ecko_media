@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,25 +8,26 @@ import { Input } from '@/components/ui/input';
 import { MapPin, Phone, Mail, Send, CheckCircle2, Radio, Facebook, Clock } from 'lucide-react';
 
 export default function ContactPage() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    subject: '',
-    message: ''
-  });
+  const [ministry, setMinistry] = useState<any>(null);
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/ministry')
+      .then(r => r.json())
+      .then(d => { if (d.success) setMinistry(d.data); })
+      .catch(console.error);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
       const data = await res.json();
       if (data.success) {
@@ -43,6 +44,9 @@ export default function ContactPage() {
     }
   };
 
+  const phones = ministry?.phone?.split(',').map((p: string) => p.trim()).filter(Boolean) || [];
+  const facebookUrl = ministry?.socialMedia?.facebook || null;
+
   return (
     <div className="min-h-screen pt-20 pb-24">
       {/* Hero */}
@@ -54,7 +58,7 @@ export default function ContactPage() {
               Get In <span className="text-primary">Touch</span>
             </h1>
             <p className="text-xl text-white/80 max-w-2xl mx-auto">
-              Have a story tip, program suggestion, prayer request, or general enquiry? We'd love to hear from you.
+              Have a story tip, program suggestion, or general enquiry? We'd love to hear from you.
             </p>
           </div>
         </div>
@@ -63,90 +67,90 @@ export default function ContactPage() {
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="grid md:grid-cols-2 gap-12">
-            {/* Contact Info */}
+            {/* Contact Info from API */}
             <div>
               <h2 className="text-3xl font-bold mb-3">Contact Information</h2>
               <p className="text-muted-foreground mb-8">
-                Reach Ecko Media 97.7 FM through any of the channels below. Our team is ready to assist you.
+                Reach Ecko Media through any of the channels below.
               </p>
 
               <div className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <MapPin className="w-5 h-5 text-primary" />
-                      Location
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">Bo, Southern Province, Sierra Leone</p>
-                  </CardContent>
-                </Card>
+                {ministry?.address && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-base">
+                        <MapPin className="w-5 h-5 text-primary" /> Location
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground">{ministry.address}</p>
+                    </CardContent>
+                  </Card>
+                )}
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <Phone className="w-5 h-5 text-primary" />
-                      Phone
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-col gap-2">
-                      <a href="tel:+23278051555" className="text-muted-foreground hover:text-primary transition-colors">
-                        +232 78 051 555
+                {phones.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-base">
+                        <Phone className="w-5 h-5 text-primary" /> Phone
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-col gap-2">
+                        {phones.map((phone: string) => (
+                          <a key={phone} href={`tel:${phone.replace(/\s/g, '')}`}
+                            className="text-muted-foreground hover:text-primary transition-colors">
+                            {phone}
+                          </a>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {ministry?.email && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-base">
+                        <Mail className="w-5 h-5 text-primary" /> Email
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <a href={`mailto:${ministry.email}`}
+                        className="text-muted-foreground hover:text-primary transition-colors">
+                        {ministry.email}
                       </a>
-                      <a href="tel:+23299051555" className="text-muted-foreground hover:text-primary transition-colors">
-                        +232 99 051 555
+                    </CardContent>
+                  </Card>
+                )}
+
+                {facebookUrl && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-base">
+                        <Facebook className="w-5 h-5 text-primary" /> Facebook
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <a href={facebookUrl} target="_blank" rel="noopener noreferrer"
+                        className="text-muted-foreground hover:text-primary transition-colors">
+                        {facebookUrl.replace('https://', '')}
                       </a>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                )}
 
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base">
-                      <Mail className="w-5 h-5 text-primary" />
-                      Email
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <a href="mailto:info@eckomedia.sl" className="text-muted-foreground hover:text-primary transition-colors">
-                      info@eckomedia.sl
-                    </a>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <Facebook className="w-5 h-5 text-primary" />
-                      Facebook
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <a
-                      href="https://www.facebook.com/eckomedia232"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-primary transition-colors"
-                    >
-                      facebook.com/eckomedia232
-                    </a>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <Radio className="w-5 h-5 text-primary" />
-                      On Air
+                      <Radio className="w-5 h-5 text-primary" /> On Air
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="flex items-center justify-between">
-                    <p className="text-primary font-bold text-xl">97.7 FM</p>
+                    <p className="text-primary font-bold text-xl">104.3 FM</p>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Clock className="w-4 h-4" />
-                      <span>24 / 7</span>
+                      <span>Daily broadcasts</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -172,37 +176,18 @@ export default function ContactPage() {
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-4">
-                    <Input
-                      placeholder="Your Name *"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      required
-                    />
-                    <Input
-                      type="email"
-                      placeholder="Your Email *"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      required
-                    />
-                    <Input
-                      placeholder="Phone Number (optional)"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    />
-                    <Input
-                      placeholder="Subject"
-                      value={formData.subject}
-                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    />
-                    <textarea
-                      placeholder="Your Message *"
-                      value={formData.message}
+                    <Input placeholder="Your Name *" value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+                    <Input type="email" placeholder="Your Email *" value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })} required />
+                    <Input placeholder="Phone Number (optional)" value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+                    <Input placeholder="Subject" value={formData.subject}
+                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })} />
+                    <textarea placeholder="Your Message *" value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      required
-                      rows={6}
-                      className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary resize-none"
-                    />
+                      required rows={6}
+                      className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
                     <Button type="submit" disabled={submitting} className="w-full">
                       <Send className="w-4 h-4 mr-2" />
                       {submitting ? 'Sending...' : 'Send Message'}

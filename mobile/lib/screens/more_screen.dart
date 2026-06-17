@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../config.dart';
 import 'about_screen.dart';
 import 'schedule_screen.dart';
 
@@ -40,7 +41,7 @@ class MoreScreen extends StatelessWidget {
                     color: AppColors.gold,
                   ),
                   child: Icon(
-                    Icons.church,
+                    Icons.radio,
                     size: 40,
                     color: AppColors.deepNavy,
                   ),
@@ -55,7 +56,7 @@ class MoreScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Ecko Media',
+                  '104.3 FM • Freetown, Sierra Leone',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.gold,
                       ),
@@ -79,7 +80,7 @@ class MoreScreen extends StatelessWidget {
               ),
               _MenuItem(
                 icon: Icons.info_outline,
-                title: 'About the Ministry',
+                title: 'About Ecko Media',
                 subtitle: 'Learn more about us',
                 onTap: () => _navigateToAbout(context),
               ),
@@ -264,11 +265,11 @@ class MoreScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildContactItem(Icons.email, 'info@eckomedia.sl'),
+            _buildContactItem(Icons.email, Config.supportEmail),
             const SizedBox(height: 12),
-            _buildContactItem(Icons.phone, '+1 (555) 123-4567'),
+            _buildContactItem(Icons.phone, Config.supportPhone),
             const SizedBox(height: 12),
-            _buildContactItem(Icons.location_on, '123 Ministry Lane, City, State'),
+            _buildContactItem(Icons.location_on, Config.address),
           ],
         ),
         actions: [
