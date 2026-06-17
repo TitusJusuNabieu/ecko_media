@@ -99,7 +99,7 @@ export default function AdminDashboard() {
   const statCards = [
     {
       title: 'Active Listeners',
-      value: stats?.listeners || 247,
+      value: stats?.listeners || 0,
       change: '+12.5%',
       trend: 'up',
       icon: Users,
@@ -158,10 +158,10 @@ export default function AdminDashboard() {
       color: 'from-green-500 to-emerald-500',
     },
     {
-      title: 'Sermons Library',
-      description: 'Upload and organize sermons',
+      title: 'Programs',
+      description: 'Add and edit broadcast programs',
       icon: Mic2,
-      href: '/admin/sermons',
+      href: '/admin/programs',
       color: 'from-orange-500 to-yellow-500',
     },
   ];
@@ -175,7 +175,7 @@ export default function AdminDashboard() {
             Welcome back, {user?.name || 'Admin'}! 👋
           </h1>
           <p className="text-muted-foreground">
-            Here's what's happening with your radio station today.
+            Here's what's happening with Ecko Media today.
           </p>
         </div>
 

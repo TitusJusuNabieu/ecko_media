@@ -22,6 +22,11 @@ export async function PATCH(
         ...(body.isActive !== undefined && { isActive: body.isActive }),
         ...(body.is_active !== undefined && { isActive: body.is_active }),
         ...(body.name !== undefined && { name: body.name }),
+        ...(body.slug !== undefined && { slug: body.slug }),
+        ...(body.description !== undefined && { description: body.description }),
+        ...(body.hostName !== undefined && { hostName: body.hostName }),
+        ...(body.host_name !== undefined && { hostName: body.host_name }),
+        ...(body.genre !== undefined && { genre: body.genre }),
         ...(body.schedule !== undefined && { schedule: body.schedule }),
       },
     });

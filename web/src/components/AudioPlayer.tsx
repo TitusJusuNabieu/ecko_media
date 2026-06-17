@@ -107,7 +107,7 @@ export function AudioPlayer({ streamUrl, stationName, onPlayStateChange }: Audio
           <div className="flex items-center gap-3 flex-shrink-0">
             <div className="relative w-12 h-12">
               <Image
-                src="/ecko-logo.png"
+                src="/ecko-logo.svg"
                 alt="Ecko Media"
                 fill
                 className="object-contain rounded-full shadow-lg"

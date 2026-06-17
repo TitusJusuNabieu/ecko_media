@@ -85,17 +85,23 @@ export function Navbar() {
             <Button
               size="sm"
               className="bg-gradient-to-r from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary text-white shadow-lg"
+              asChild
             >
-              <Play className="w-4 h-4 mr-2 fill-current" />
-              Listen Live
+              <Link href="/live">
+                <Play className="w-4 h-4 mr-2 fill-current" />
+                Listen Live
+              </Link>
             </Button>
             <Button
               size="sm"
               variant="outline"
               className="border-primary text-primary hover:bg-primary hover:text-white"
+              asChild
             >
-              <Heart className="w-4 h-4 mr-2" />
-              Donate
+              <Link href="/donate">
+                <Heart className="w-4 h-4 mr-2" />
+                Donate
+              </Link>
             </Button>
           </div>
 
@@ -130,13 +136,17 @@ export function Navbar() {
               );
             })}
             <div className="pt-4 space-y-2">
-              <Button className="w-full bg-gradient-to-r from-secondary to-secondary/90">
-                <Play className="w-4 h-4 mr-2 fill-current" />
-                Listen Live
+              <Button className="w-full bg-gradient-to-r from-secondary to-secondary/90" asChild>
+                <Link href="/live" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Play className="w-4 h-4 mr-2 fill-current" />
+                  Listen Live
+                </Link>
               </Button>
-              <Button variant="outline" className="w-full">
-                <Heart className="w-4 h-4 mr-2" />
-                Donate
+              <Button variant="outline" className="w-full" asChild>
+                <Link href="/donate" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Heart className="w-4 h-4 mr-2" />
+                  Donate
+                </Link>
               </Button>
             </div>
           </div>

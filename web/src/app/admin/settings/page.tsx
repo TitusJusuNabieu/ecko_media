@@ -1,261 +1,315 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import AdminLayoutWrapper from '@/components/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Settings, Save, AlertCircle, CheckCircle } from 'lucide-react';
-import { useState } from 'react';
+import { Settings, Save, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 export default function AdminSettingsPage() {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  const [station, setStation] = useState<any>(null);
+
+  const [stationForm, setStationForm] = useState({
+    name: '',
+    tagline: '',
+    description: '',
+    streamUrl: '',
+    genre: '',
+    language: '',
+    country: '',
+    phone: '',
+    email: '',
+    website: '',
+    facebook: '',
+    twitter: '',
+    instagram: '',
+    youtube: '',
+  });
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      const [stationsRes, ministryRes] = await Promise.all([
+        fetch('/api/stations'),
+        fetch('/api/ministry'),
+      ]);
+      const stationsData = await stationsRes.json();
+      const ministryData = await ministryRes.json();
+
+      if (stationsData.success && stationsData.data.length > 0) {
+        const s = stationsData.data[0];
+        setStation(s);
+        const social = s.social_media || s.socialMedia || {};
+        setStationForm({
+          name: s.name || '',
+          tagline: s.tagline || '',
+          description: s.description || '',
+          streamUrl: s.stream_url || s.streamUrl || '',
+          genre: s.genre || '',
+          language: s.language || '',
+          country: s.country || '',
+          phone: ministryData.success ? ministryData.data?.phone || '' : '',
+          email: ministryData.success ? ministryData.data?.email || '' : '',
+          website: ministryData.success ? ministryData.data?.website || '' : '',
+          facebook: social.facebook || '',
+          twitter: social.twitter || '',
+          instagram: social.instagram || '',
+          youtube: social.youtube || '',
+        });
+      }
+    } catch {}
+    finally { setLoading(false); }
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">System Settings</h1>
-        <p className="text-gray-600 mt-1">Configure your radio station settings</p>
-      </div>
+  const handleSave = async () => {
+    if (!station?.id) { setError('No station found.'); return; }
+    setSaving(true);
+    setError('');
+    setSaved(false);
 
-      {saved && (
-        <Card className="border-green-200 bg-green-50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-5 w-5 text-green-600" />
+    try {
+      const res = await fetch('/api/admin/stations', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          id: station.id,
+          name: stationForm.name,
+          slug: station.slug || 'ecko-media',
+          tagline: stationForm.tagline,
+          description: stationForm.description,
+          streamUrl: stationForm.streamUrl,
+          genre: stationForm.genre,
+          language: stationForm.language,
+          country: stationForm.country,
+          socialMedia: {
+            facebook: stationForm.facebook,
+            twitter: stationForm.twitter,
+            instagram: stationForm.instagram,
+            youtube: stationForm.youtube,
+          },
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 4000);
+      } else {
+        setError(data.message || 'Failed to save settings.');
+      }
+    } catch {
+      setError('Failed to save settings. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const sf = (field: keyof typeof stationForm) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setStationForm(f => ({ ...f, [field]: e.target.value }));
+
+  if (loading) {
+    return (
+      <AdminLayoutWrapper>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </AdminLayoutWrapper>
+    );
+  }
+
+  return (
+    <AdminLayoutWrapper>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Settings</h1>
+          <p className="text-muted-foreground mt-1">Configure Ecko Media station settings</p>
+        </div>
+
+        {saved && (
+          <Card className="border-green-200 bg-green-50">
+            <CardContent className="p-4 flex items-center gap-3">
+              <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
               <p className="text-green-800 font-medium">Settings saved successfully!</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {error && (
+          <Card className="border-destructive/30 bg-destructive/5">
+            <CardContent className="p-4 flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0" />
+              <p className="text-destructive text-sm">{error}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Station Info */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Station Information</CardTitle>
+            <CardDescription>Basic information shown across the website</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Station Name</label>
+                <Input value={stationForm.name} onChange={sf('name')} placeholder="Ecko Media 104.3 FM" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Tagline</label>
+                <Input value={stationForm.tagline} onChange={sf('tagline')} placeholder="Connecting Voices" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Genre</label>
+                <Input value={stationForm.genre} onChange={sf('genre')} placeholder="News & Talk" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Language</label>
+                <Input value={stationForm.language} onChange={sf('language')} placeholder="English" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Country</label>
+                <Input value={stationForm.country} onChange={sf('country')} placeholder="Sierra Leone" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1.5">Description</label>
+              <Input value={stationForm.description} onChange={sf('description')}
+                placeholder="Short description of the station..." />
             </div>
           </CardContent>
         </Card>
-      )}
 
-      {/* Station Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Station Information</CardTitle>
-          <CardDescription>Basic information about your radio station</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Station Name</label>
-              <Input defaultValue="Ecko Media" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Frequency</label>
-              <Input defaultValue="104.3 FM" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Location</label>
-              <Input defaultValue="48 Siaka Stevens Street, Freetown, Sierra Leone" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Phone</label>
-              <Input defaultValue="+232 XX XXX XXXX" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Email</label>
-              <Input type="email" defaultValue="eckomedia3@gmail.com" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Website</label>
-              <Input defaultValue="https://eckomedia.sl" />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Tagline</label>
-            <Input defaultValue="Connecting Voices" />
-          </div>
-        </CardContent>
-      </Card>
+        {/* Streaming */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Live Stream URL</CardTitle>
+            <CardDescription>The audio stream URL for the live radio player</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Input value={stationForm.streamUrl} onChange={sf('streamUrl')}
+              placeholder="http://stream.eckomedia.sl:8000/live.mp3" />
+            <p className="text-xs text-muted-foreground mt-2">
+              Update this when you change your AzuraCast or streaming server URL.
+            </p>
+          </CardContent>
+        </Card>
 
-      {/* Streaming Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Streaming Configuration</CardTitle>
-          <CardDescription>Configure your live stream URLs</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">Primary Stream URL</label>
-            <Input defaultValue="http://stream.eckomedia.sl:8000/live.mp3" />
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">High Quality Stream (Optional)</label>
-              <Input placeholder="http://..." />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Low Quality Stream (Optional)</label>
-              <Input placeholder="http://..." />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Social Media */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Social Media Links</CardTitle>
-          <CardDescription>Connect your social media accounts</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Facebook</label>
-              <Input placeholder="https://facebook.com/..." />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Twitter/X</label>
-              <Input placeholder="https://twitter.com/..." />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Instagram</label>
-              <Input placeholder="https://instagram.com/..." />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">YouTube</label>
-              <Input placeholder="https://youtube.com/..." />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Email Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Email Configuration</CardTitle>
-          <CardDescription>SMTP settings for email notifications</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">SMTP Host</label>
-              <Input placeholder="smtp.gmail.com" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">SMTP Port</label>
-              <Input placeholder="587" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">SMTP Username</label>
-              <Input placeholder="your-email@example.com" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">SMTP Password</label>
-              <Input type="password" placeholder="••••••••" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Payment Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Payment Integration</CardTitle>
-          <CardDescription>Configure payment gateways for donations</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">Mobile Money Provider</label>
-            <select className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-              <option>Orange Money</option>
-              <option>Africell Money</option>
-              <option>Other</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Payment Gateway API Key</label>
-            <Input type="password" placeholder="Enter API key" />
-          </div>
-          <div className="flex items-center gap-2">
-            <input type="checkbox" id="test-mode" className="rounded" />
-            <label htmlFor="test-mode" className="text-sm">Enable Test Mode</label>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* API Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle>API Configuration</CardTitle>
-          <CardDescription>Third-party API integrations</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">YouTube API Key</label>
-            <Input type="password" placeholder="Enter YouTube API key" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">YouTube Channel ID</label>
-            <Input placeholder="Enter channel ID" />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Moderation Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Content Moderation</CardTitle>
-          <CardDescription>Auto-approval and moderation settings</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+        {/* Contact */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Contact Details</CardTitle>
+            <CardDescription>Shown in the footer and contact page (edit via database or seed for now)</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <p className="font-medium">Auto-approve song requests</p>
-                <p className="text-sm text-gray-600">Automatically approve incoming song requests</p>
+                <label className="block text-sm font-medium mb-1.5">Phone</label>
+                <Input value={stationForm.phone} disabled placeholder="076946946, +13464936503"
+                  className="bg-muted/50" />
               </div>
-              <input type="checkbox" className="rounded" />
-            </div>
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div>
-                <p className="font-medium">Auto-approve shoutouts</p>
-                <p className="text-sm text-gray-600">Automatically approve shoutout messages</p>
+                <label className="block text-sm font-medium mb-1.5">Email</label>
+                <Input value={stationForm.email} disabled placeholder="eckomedia3@gmail.com"
+                  className="bg-muted/50" />
               </div>
-              <input type="checkbox" className="rounded" />
-            </div>
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div>
-                <p className="font-medium">Enable profanity filter</p>
-                <p className="text-sm text-gray-600">Filter inappropriate language in submissions</p>
+                <label className="block text-sm font-medium mb-1.5">Website</label>
+                <Input value={stationForm.website} disabled placeholder="https://eckomedia.sl"
+                  className="bg-muted/50" />
               </div>
-              <input type="checkbox" defaultChecked className="rounded" />
             </div>
-          </div>
-        </CardContent>
-      </Card>
+            <p className="text-xs text-muted-foreground">
+              Contact details are managed via the Ministry Info record in the database. Contact your developer to update these.
+            </p>
+          </CardContent>
+        </Card>
 
-      {/* Save Button */}
-      <div className="flex gap-4">
-        <Button size="lg" onClick={handleSave}>
-          <Save className="mr-2 h-4 w-4" />
-          Save All Settings
-        </Button>
-        <Button size="lg" variant="outline">
-          Reset to Defaults
-        </Button>
+        {/* Social Media */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Social Media</CardTitle>
+            <CardDescription>Links shown in the footer and about page</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Facebook</label>
+                <Input value={stationForm.facebook} onChange={sf('facebook')}
+                  placeholder="https://facebook.com/eckomedia232" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Twitter / X</label>
+                <Input value={stationForm.twitter} onChange={sf('twitter')}
+                  placeholder="https://twitter.com/eckomedia" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Instagram</label>
+                <Input value={stationForm.instagram} onChange={sf('instagram')}
+                  placeholder="https://instagram.com/eckomedia" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">YouTube</label>
+                <Input value={stationForm.youtube} onChange={sf('youtube')}
+                  placeholder="https://youtube.com/@eckomedia" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Login Credentials Info */}
+        <Card className="border-primary/20 bg-primary/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="w-5 h-5 text-primary" />
+              Admin Login Credentials
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border">
+                <p className="text-xs text-muted-foreground mb-1">Primary Admin</p>
+                <p className="font-mono text-sm font-bold">eckomedia3@gmail.com</p>
+                <p className="font-mono text-sm text-muted-foreground">EckoMedia2024!</p>
+              </div>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border">
+                <p className="text-xs text-muted-foreground mb-1">Backup Admin</p>
+                <p className="font-mono text-sm font-bold">admin@eckomedia.sl</p>
+                <p className="font-mono text-sm text-muted-foreground">EckoAdmin2024!</p>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Change passwords via the Users page after first login.
+            </p>
+          </CardContent>
+        </Card>
+
+        <div className="flex gap-4 pt-2">
+          <Button size="lg" onClick={handleSave} disabled={saving}>
+            {saving ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" /> Saving...
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <Save className="w-4 h-4" /> Save Settings
+              </span>
+            )}
+          </Button>
+          <Button size="lg" variant="outline" onClick={loadSettings}>
+            Reload from Database
+          </Button>
+        </div>
       </div>
-
-      {/* Info Card */}
-      <Card className="border-blue-200 bg-blue-50">
-        <CardContent className="p-6">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <h4 className="font-semibold text-blue-900 mb-1">Important Note</h4>
-              <p className="text-sm text-blue-800">
-                Settings are currently stored in the database. In production, sensitive information like API keys and passwords should be stored as environment variables for security.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    </AdminLayoutWrapper>
   );
 }

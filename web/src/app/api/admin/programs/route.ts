@@ -23,8 +23,8 @@ export async function POST(request: NextRequest) {
   try {
     const auth = await verifyAuth(request);
     if (!auth) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    if (auth.role !== 'admin' && auth.role !== 'editor') {
-      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+    if (!['admin', 'editor'].includes(auth.role)) {
+      return NextResponse.json({ success: false, error: 'Editors and above can manage programs' }, { status: 403 });
     }
 
     const { stationId, station_id, name, slug, description, hostName, host_name, genre, schedule, isActive } = await request.json();

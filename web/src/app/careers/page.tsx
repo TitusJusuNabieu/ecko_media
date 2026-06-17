@@ -245,7 +245,7 @@ export default function CareersPage() {
               Share your CV with our recruitment team for future opportunities.
             </p>
             <Button size="lg" asChild>
-              <a href="mailto:careers@eckomedia.sl">
+              <a href="mailto:eckomedia3@gmail.com">
                 <Mail className="mr-2 h-5 w-5" />
                 Send Your CV
               </a>

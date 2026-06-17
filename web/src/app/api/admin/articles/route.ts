@@ -45,6 +45,9 @@ export async function POST(request: NextRequest) {
 
     const { title, slug, content, excerpt, featuredImage, featured_image, categoryId, category_id, tags, status } = await request.json();
 
+    // Writers can only save drafts, not publish
+    const resolvedStatus = (auth.role === 'writer' && status === 'published') ? 'draft' : (status || 'draft');
+
     const article = await prisma.article.create({
       data: {
         title,
@@ -55,8 +58,8 @@ export async function POST(request: NextRequest) {
         authorId: auth.userId,
         categoryId: categoryId || category_id || null,
         tags: tags || [],
-        status: status || 'draft',
-        publishedAt: status === 'published' ? new Date() : null,
+        status: resolvedStatus,
+        publishedAt: resolvedStatus === 'published' ? new Date() : null,
       },
     });
 
@@ -79,7 +82,16 @@ export async function PUT(request: NextRequest) {
     const id = parseInt(rawId);
     if (isNaN(id)) return NextResponse.json({ success: false, message: 'Invalid id' }, { status: 400 });
 
-    const existing = await prisma.article.findUnique({ where: { id }, select: { publishedAt: true } });
+    const existing = await prisma.article.findUnique({ where: { id }, select: { publishedAt: true, authorId: true } });
+
+    // Writers can only edit their own articles and cannot publish
+    if (auth.role === 'writer') {
+      if (existing?.authorId !== auth.userId) {
+        return NextResponse.json({ success: false, message: 'Writers can only edit their own articles' }, { status: 403 });
+      }
+    }
+
+    const resolvedStatus = (auth.role === 'writer' && status === 'published') ? 'draft' : status;
 
     await prisma.article.update({
       where: { id },
@@ -91,8 +103,8 @@ export async function PUT(request: NextRequest) {
         featuredImage: featuredImage || featured_image || null,
         categoryId: categoryId || category_id || null,
         tags: tags || [],
-        status,
-        publishedAt: status === 'published' ? (existing?.publishedAt ?? new Date()) : existing?.publishedAt ?? null,
+        status: resolvedStatus,
+        publishedAt: resolvedStatus === 'published' ? (existing?.publishedAt ?? new Date()) : existing?.publishedAt ?? null,
       },
     });
 

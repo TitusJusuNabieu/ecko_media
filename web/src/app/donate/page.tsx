@@ -33,7 +33,7 @@ export default function DonatePage() {
     { value: 'general', label: 'General Support' },
     { value: 'programs', label: 'Program Support' },
     { value: 'equipment', label: 'Equipment & Infrastructure' },
-    { value: 'missions', label: 'Missions & Outreach' },
+    { value: 'missions', label: 'Community Outreach' },
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -82,13 +82,13 @@ export default function DonatePage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
         <Card className="max-w-md w-full">
           <CardContent className="p-12 text-center">
             <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Thank You!</h2>
-            <p className="text-gray-600 mb-4">
-              Your donation has been received. God bless you for your generous support!
+            <h2 className="text-2xl font-bold mb-2">Thank You!</h2>
+            <p className="text-muted-foreground mb-4">
+              Your donation has been received. Thank you for supporting Ecko Media!
             </p>
             <Button onClick={() => router.push('/')} className="w-full">
               Back to Home
@@ -100,14 +100,14 @@ export default function DonatePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white py-20">
+      <div className="bg-gradient-to-br from-secondary via-secondary/95 to-secondary/90 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <Heart className="h-16 w-16 mx-auto mb-4" />
             <h1 className="text-4xl md:text-5xl font-bold mb-4">Support Ecko Media</h1>
-            <p className="text-xl text-green-100 max-w-2xl mx-auto">
+            <p className="text-xl text-white/80 max-w-2xl mx-auto">
               Your support keeps 104.3 FM on air — helping us broadcast news, talk shows, and community programs across Sierra Leone 24/7
             </p>
           </div>
@@ -144,7 +144,7 @@ export default function DonatePage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600">
-                Support missions and community outreach initiatives
+                Support community programs and outreach initiatives across Sierra Leone
               </p>
             </CardContent>
           </Card>

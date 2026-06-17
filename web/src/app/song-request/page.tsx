@@ -69,13 +69,13 @@ export default function SongRequestPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
           <CardContent className="p-12 text-center">
             <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Request Submitted!</h2>
-            <p className="text-gray-600 mb-4">
-              Your song request has been received. We'll play it soon!
+            <h2 className="text-2xl font-bold mb-2">Request Submitted!</h2>
+            <p className="text-muted-foreground mb-4">
+              Your song request has been received. We'll play it soon on Ecko 104.3 FM!
             </p>
             <Button onClick={() => router.push('/')} className="w-full">
               Back to Home
@@ -87,15 +87,15 @@ export default function SongRequestPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-background pt-20">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20">
+      <div className="bg-gradient-to-br from-secondary via-secondary/95 to-secondary/90 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <Music className="h-16 w-16 mx-auto mb-4" />
+            <Music className="h-16 w-16 mx-auto mb-4 text-primary" />
             <h1 className="text-4xl md:text-5xl font-bold mb-4">Request a Song</h1>
-            <p className="text-xl text-blue-100 max-w-2xl mx-auto">
-              Have a favorite song? Let us know and we'll play it for you!
+            <p className="text-xl text-white/80 max-w-2xl mx-auto">
+              Have a favorite song? Let us know and we'll play it for you on Ecko 104.3 FM!
             </p>
           </div>
         </div>
@@ -239,7 +239,7 @@ export default function SongRequestPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600">
-                We play Christian music only. All requests are subject to approval
+                All song requests are reviewed and subject to approval by our on-air team
               </p>
             </CardContent>
           </Card>

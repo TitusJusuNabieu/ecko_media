@@ -45,7 +45,7 @@ async function main() {
         about:
           'We connect voices as an independent media house based in the heart of Freetown, 48 Siaka Stevens Street. Our goal is to strive for excellence, not to compete, meeting the demands of daily challenges. We connect every voice regardless of status, region, political ideology and more. Our morning live sessions start at 7:30 AM daily Mon–Fri with many more programs throughout the day. From live 104.3 FM broadcasts to newspaper and online streaming, Ecko Media keeps Sierra Leone informed, inspired, and connected. Our motto is connecting voices, and every voice on Ecko counts.',
         address: '48 Siaka Stevens Street, Freetown, Sierra Leone',
-        phone: '076946946',
+        phone: '076946946, +13464936503',
         email: 'eckomedia3@gmail.com',
         website: 'https://www.eckomedia.sl',
         logoUrl: '/ecko-logo.svg',
@@ -63,7 +63,7 @@ async function main() {
         about:
           'We connect voices as an independent media house based in the heart of Freetown, 48 Siaka Stevens Street. Our goal is to strive for excellence, not to compete, meeting the demands of daily challenges. We connect every voice regardless of status, region, political ideology and more. Our morning live sessions start at 7:30 AM daily Mon–Fri with many more programs throughout the day. From live 104.3 FM broadcasts to newspaper and online streaming, Ecko Media keeps Sierra Leone informed, inspired, and connected. Our motto is connecting voices, and every voice on Ecko counts.',
         address: '48 Siaka Stevens Street, Freetown, Sierra Leone',
-        phone: '076946946',
+        phone: '076946946, +13464936503',
         email: 'eckomedia3@gmail.com',
         website: 'https://www.eckomedia.sl',
         logoUrl: '/ecko-logo.svg',
