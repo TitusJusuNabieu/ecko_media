@@ -71,8 +71,8 @@ async function main() {
     });
   }
 
-  // Default station
-  await prisma.station.upsert({
+  // Default station — capture id for programs
+  const station = await prisma.station.upsert({
     where: { slug: 'ecko-media' },
     update: {
       name: 'Ecko Media 104.3 FM',
@@ -168,8 +168,13 @@ async function main() {
   for (const program of programs) {
     await prisma.program.upsert({
       where: { slug: program.slug },
-      update: {},
-      create: program,
+      update: {
+        name: program.name,
+        description: program.description,
+        hostName: program.hostName,
+        schedule: program.schedule,
+      },
+      create: { ...program, stationId: station.id },
     });
   }
 
