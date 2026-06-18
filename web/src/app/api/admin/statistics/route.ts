@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
         listeners: listenerAgg._sum.listenerCount || 0,
         weeklyRequests,
         weeklyShoutouts,
-        monthlyDonations: monthlyDonations._sum.amount || 0,
+        monthlyDonations: Number(monthlyDonations._sum.amount) || 0,
       },
     });
   } catch (error) {
