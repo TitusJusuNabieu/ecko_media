@@ -11,10 +11,14 @@ export interface Station {
   country?: string;
   city?: string;
   frequency?: string;
-  listener_count: number;
+  tagline?: string;
+  listener_count?: number;
+  listenerCount?: number;
   social_media?: Record<string, string>;
   is_active: boolean;
   is_featured: boolean;
+  isActive?: boolean;
+  isFeatured?: boolean;
   created_at?: string;
   updated_at?: string;
   programs?: Program[];
@@ -67,14 +71,18 @@ export interface ArticleCategory {
 
 export interface User {
   id: number;
-  username: string;
+  username?: string;
   email: string;
-  full_name: string;
-  role: 'admin' | 'editor' | 'moderator' | 'user';
+  name?: string;
+  full_name?: string;
+  role: 'admin' | 'editor' | 'writer' | 'moderator' | 'user';
   avatar_url?: string;
+  avatar?: string;
   bio?: string;
-  is_active: boolean;
+  is_active?: boolean;
+  isActive?: boolean;
   created_at?: string;
+  createdAt?: string;
   last_login?: string;
 }
 
