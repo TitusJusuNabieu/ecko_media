@@ -74,7 +74,7 @@ export async function PUT(request: NextRequest) {
   try {
     const auth = await verifyAuth(request);
     if (!auth) return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
-    if (auth.role !== 'admin' && auth.role !== 'editor') {
+    if (!['admin', 'editor', 'writer'].includes(auth.role)) {
       return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
     }
 
