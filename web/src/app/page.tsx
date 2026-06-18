@@ -84,8 +84,8 @@ export default function HomePage() {
       icon: Mic2,
       title: 'Talk & Community',
       description: 'Governance reviews, cultural shows, community discussions — every voice counts regardless of status, region, or ideology.',
-      iconColor: 'text-orange-400',
-      bgColor: 'bg-orange-400/10',
+      iconColor: 'text-purple-400',
+      bgColor: 'bg-purple-400/10',
     },
     {
       icon: Globe,

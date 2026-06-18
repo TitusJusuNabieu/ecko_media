@@ -52,8 +52,8 @@ export default function AboutPage() {
       icon: Mic2,
       title: 'Talk Shows & Community',
       description: 'Governance reviews, cultural programs, community debates — every voice regardless of status, region, or political ideology.',
-      color: 'text-orange-500',
-      bg: 'bg-orange-500/10',
+      color: 'text-purple-500',
+      bg: 'bg-purple-500/10',
     },
     {
       icon: Tv2,

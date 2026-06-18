@@ -130,8 +130,8 @@ export default function AdminDashboard() {
       change: '-3.4%',
       trend: 'down',
       icon: MessageSquare,
-      color: 'from-orange-500 to-red-500',
-      bgColor: 'bg-orange-500/10',
+      color: 'from-purple-500 to-purple-700',
+      bgColor: 'bg-purple-500/10',
     },
   ];
 
@@ -162,7 +162,7 @@ export default function AdminDashboard() {
       description: 'Add and edit broadcast programs',
       icon: Mic2,
       href: '/admin/programs',
-      color: 'from-orange-500 to-yellow-500',
+      color: 'from-purple-500 to-purple-300',
     },
   ];
 
