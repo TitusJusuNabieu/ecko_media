@@ -1,320 +1,175 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Heart, CreditCard, Send, CheckCircle, AlertCircle, DollarSign } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Heart, Loader2, Shield, Smartphone } from 'lucide-react';
+
+const PRESET_AMOUNTS = [10, 25, 50, 100, 250];
 
 export default function DonatePage() {
-  const router = useRouter();
+  const [amount, setAmount] = useState('');
+  const [customAmount, setCustomAmount] = useState('');
+  const [donorName, setDonorName] = useState('');
+  const [donorEmail, setDonorEmail] = useState('');
+  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
-  const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
-  const [formData, setFormData] = useState({
-    user_email: '',
-    amount: '',
-    currency: 'SLL',
-    method: 'mobile_money',
-    category: 'general'
-  });
 
-  const presetAmounts = [10000, 25000, 50000, 100000, 250000, 500000];
-  const currencies = ['SLL', 'USD', 'EUR', 'GBP'];
-  const paymentMethods = [
-    { value: 'mobile_money', label: 'Mobile Money', icon: '📱' },
-    { value: 'bank_transfer', label: 'Bank Transfer', icon: '🏦' },
-    { value: 'credit_card', label: 'Credit Card', icon: '💳' },
-  ];
-  const categories = [
-    { value: 'general', label: 'General Support' },
-    { value: 'programs', label: 'Program Support' },
-    { value: 'equipment', label: 'Equipment & Infrastructure' },
-    { value: 'missions', label: 'Community Outreach' },
-  ];
+  const selectedAmount = customAmount || amount;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const handleDonate = async () => {
+    const finalAmount = Number(selectedAmount);
+    if (!finalAmount || finalAmount <= 0) {
+      setError('Please select or enter a donation amount.');
+      return;
+    }
     setError('');
+    setLoading(true);
 
     try {
-      const response = await fetch('/api/donations', {
+      const res = await fetch('/api/donate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          reference_id: `DON-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
-        })
+        body: JSON.stringify({ amount: finalAmount, donorName, donorEmail, message }),
       });
+      const data = await res.json();
 
-      const data = await response.json();
-
-      if (data.success) {
-        setSuccess(true);
-        setTimeout(() => {
-          router.push('/');
-        }, 5000);
+      if (data.success && data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
       } else {
-        setError(data.error || 'Failed to process donation');
+        setError(data.error || 'Something went wrong. Please try again.');
       }
-    } catch (err) {
-      setError('An error occurred. Please try again.');
+    } catch {
+      setError('Network error. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
-  };
-
-  const selectAmount = (amount: number) => {
-    setSelectedAmount(amount);
-    setFormData(prev => ({ ...prev, amount: amount.toString() }));
-  };
-
-  if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-        <Card className="max-w-md w-full">
-          <CardContent className="p-12 text-center">
-            <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Thank You!</h2>
-            <p className="text-muted-foreground mb-4">
-              Your donation has been received. Thank you for supporting Ecko Media!
-            </p>
-            <Button onClick={() => router.push('/')} className="w-full">
-              Back to Home
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-secondary via-secondary/95 to-secondary/90 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <Heart className="h-16 w-16 mx-auto mb-4" />
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Support Ecko Media</h1>
-            <p className="text-xl text-white/80 max-w-2xl mx-auto">
-              Your support keeps 104.3 FM on air — helping us broadcast news, talk shows, and community programs across Sierra Leone 24/7
-            </p>
-          </div>
+    <div className="min-h-screen">
+      {/* Hero */}
+      <div className="bg-gradient-to-br from-secondary via-secondary/95 to-secondary/90 text-white py-20 pt-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <Heart className="h-16 w-16 mx-auto mb-4 text-primary" />
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">Support Ecko Media</h1>
+          <p className="text-xl text-white/80 max-w-2xl mx-auto">
+            Your support keeps independent journalism and community radio alive in Sierra Leone.
+          </p>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">📻 Broadcasting</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600">
-                Keep our station on air 24/7 reaching thousands daily
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">🎓 Programs</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600">
-                Fund quality programs, content creation, and community journalism
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">🌍 Outreach</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600">
-                Support community programs and outreach initiatives across Sierra Leone
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Make a Donation</CardTitle>
-            <CardDescription>
-              Choose your donation amount and preferred payment method
-            </CardDescription>
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <Card className="shadow-xl border-2 border-primary/10">
+          <CardHeader className="text-center pb-2">
+            <CardTitle className="text-2xl">Make a Donation</CardTitle>
+            <p className="text-muted-foreground text-sm">Powered by Monime — secure mobile money payments</p>
           </CardHeader>
+          <CardContent className="space-y-6 pt-4">
+            {/* Preset amounts */}
+            <div>
+              <label className="text-sm font-medium mb-3 block">Select Amount (SLE)</label>
+              <div className="grid grid-cols-5 gap-2">
+                {PRESET_AMOUNTS.map((a) => (
+                  <Button
+                    key={a}
+                    variant={amount === String(a) && !customAmount ? 'default' : 'outline'}
+                    onClick={() => { setAmount(String(a)); setCustomAmount(''); }}
+                    className="text-sm"
+                  >
+                    {a}
+                  </Button>
+                ))}
+              </div>
+            </div>
 
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-red-800">{error}</p>
-                </div>
+            {/* Custom amount */}
+            <div>
+              <label className="text-sm font-medium mb-1 block">Or enter a custom amount (SLE)</label>
+              <Input
+                type="number"
+                min="1"
+                placeholder="e.g. 75"
+                value={customAmount}
+                onChange={e => { setCustomAmount(e.target.value); setAmount(''); }}
+              />
+            </div>
+
+            {/* Donor details */}
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-1 block">Your Name (optional)</label>
+                <Input placeholder="Anonymous" value={donorName} onChange={e => setDonorName(e.target.value)} />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Email (optional)</label>
+                <Input type="email" placeholder="you@example.com" value={donorEmail} onChange={e => setDonorEmail(e.target.value)} />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-1 block">Message (optional)</label>
+              <Textarea
+                placeholder="Leave a message of support..."
+                value={message}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMessage(e.target.value)}
+                rows={3}
+              />
+            </div>
+
+            {error && (
+              <div className="bg-destructive/10 text-destructive text-sm rounded-lg p-3 border border-destructive/20">
+                {error}
+              </div>
+            )}
+
+            {selectedAmount && Number(selectedAmount) > 0 && (
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 flex items-center justify-between">
+                <span className="font-medium">Donation Total</span>
+                <span className="text-2xl font-bold text-primary">SLE {Number(selectedAmount).toLocaleString()}</span>
+              </div>
+            )}
+
+            <Button
+              className="w-full h-12 text-base gap-2"
+              onClick={handleDonate}
+              disabled={loading || !selectedAmount || Number(selectedAmount) <= 0}
+            >
+              {loading ? (
+                <><Loader2 className="h-5 w-5 animate-spin" /> Processing...</>
+              ) : (
+                <><Heart className="h-5 w-5" /> Donate via Monime</>
               )}
+            </Button>
 
-              {/* Preset Amounts */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Select Amount (SLL)
-                </label>
-                <div className="grid grid-cols-3 gap-3">
-                  {presetAmounts.map((amount) => (
-                    <Button
-                      key={amount}
-                      type="button"
-                      variant={selectedAmount === amount ? 'default' : 'outline'}
-                      onClick={() => selectAmount(amount)}
-                      className="h-auto py-4"
-                    >
-                      {amount.toLocaleString()}
-                    </Button>
-                  ))}
-                </div>
+            <div className="flex items-center justify-center gap-6 pt-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5">
+                <Shield className="h-4 w-4 text-green-500" />
+                Secure payment
               </div>
-
-              {/* Custom Amount */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Or Enter Custom Amount <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                  <Input
-                    type="number"
-                    name="amount"
-                    value={formData.amount}
-                    onChange={(e) => {
-                      handleChange(e);
-                      setSelectedAmount(null);
-                    }}
-                    placeholder="Enter amount"
-                    className="pl-10"
-                    required
-                    min="1000"
-                  />
-                </div>
-              </div>
-
-              {/* Currency */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Currency <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="currency"
-                  value={formData.currency}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                >
-                  {currencies.map((currency) => (
-                    <option key={currency} value={currency}>
-                      {currency}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Payment Method */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Payment Method <span className="text-red-500">*</span>
-                </label>
-                <div className="grid md:grid-cols-3 gap-3">
-                  {paymentMethods.map((method) => (
-                    <Button
-                      key={method.value}
-                      type="button"
-                      variant={formData.method === method.value ? 'default' : 'outline'}
-                      onClick={() => setFormData(prev => ({ ...prev, method: method.value }))}
-                      className="h-auto py-4 flex flex-col items-center"
-                    >
-                      <span className="text-2xl mb-1">{method.icon}</span>
-                      <span className="text-xs">{method.label}</span>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Category */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Donation Category
-                </label>
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {categories.map((category) => (
-                    <option key={category.value} value={category.value}>
-                      {category.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Email */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address (for receipt)
-                </label>
-                <Input
-                  type="email"
-                  name="user_email"
-                  value={formData.user_email}
-                  onChange={handleChange}
-                  placeholder="your.email@example.com"
-                />
-              </div>
-
-              <Button type="submit" className="w-full" size="lg" disabled={loading}>
-                {loading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <Heart className="mr-2 h-4 w-4" />
-                    Donate Now
-                  </>
-                )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Security Notice */}
-        <Card className="mt-6 border-green-200 bg-green-50">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-3">
-              <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <h4 className="font-semibold text-green-900 mb-1">Secure Donation</h4>
-                <p className="text-sm text-green-800">
-                  All donations are processed securely. You will receive a confirmation email after your donation is complete.
-                </p>
+              <div className="flex items-center gap-1.5">
+                <Smartphone className="h-4 w-4 text-primary" />
+                Mobile money supported
               </div>
             </div>
           </CardContent>
         </Card>
+
+        <div className="mt-10 grid sm:grid-cols-3 gap-4 text-center">
+          {[
+            { title: 'Independent News', desc: 'Keep journalism free from political and commercial influence.' },
+            { title: 'Community Radio', desc: 'Support 104.3 FM broadcasting across Freetown and beyond.' },
+            { title: 'Local Voices', desc: 'Help us amplify stories that matter to Sierra Leoneans.' },
+          ].map((item) => (
+            <Card key={item.title} className="p-4">
+              <h3 className="font-semibold mb-1 text-sm">{item.title}</h3>
+              <p className="text-xs text-muted-foreground">{item.desc}</p>
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -20,6 +20,7 @@ import {
   Mic2,
   Music,
   UserCircle,
+  BookOpen,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +35,7 @@ const menuItems = [
   { label: 'Stations', icon: Radio, href: '/admin/stations' },
   { label: 'Programs', icon: Mic2, href: '/admin/programs' },
   { label: 'Articles', icon: Newspaper, href: '/admin/articles' },
+  { label: 'Newspaper', icon: BookOpen, href: '/admin/newspaper' },
   { label: 'Song Requests', icon: Music, href: '/admin/song-requests' },
   { label: 'Shoutouts', icon: Heart, href: '/admin/shoutouts' },
   { label: 'Contact Messages', icon: MessageSquare, href: '/admin/contact-messages' },

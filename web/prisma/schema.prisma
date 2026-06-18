@@ -256,6 +256,21 @@ model Career {
   @@map("careers")
 }
 
+model Newspaper {
+  id          Int       @id @default(autoincrement())
+  title       String
+  edition     String
+  coverImage  String?   @map("cover_image")
+  pdfUrl      String    @map("pdf_url")
+  description String?   @db.Text
+  publishedAt DateTime  @map("published_at")
+  isPublished Boolean   @default(true) @map("is_published")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("newspapers")
+}
+
 model MinistryInfo {
   id        Int      @id @default(autoincrement())
   name      String

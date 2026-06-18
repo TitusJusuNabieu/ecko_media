@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Radio, Menu, X, Play, Heart, Mic2, Calendar, Phone, Home, Briefcase } from 'lucide-react';
+import { Radio, Menu, X, Play, Heart, Mic2, Phone, Home, Briefcase, Newspaper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function Navbar() {
@@ -22,6 +22,7 @@ export function Navbar() {
     { href: '/', label: 'Home', icon: Home },
     { href: '/about', label: 'About', icon: Radio },
     { href: '/programs', label: 'Programs', icon: Mic2 },
+    { href: '/newspaper', label: 'Newspaper', icon: Newspaper },
     { href: '/careers', label: 'Careers', icon: Briefcase },
     { href: '/contact', label: 'Contact', icon: Phone },
   ];
