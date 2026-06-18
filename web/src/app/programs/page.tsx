@@ -51,7 +51,7 @@ export default function ProgramsPage() {
               Our <span className="text-primary">Program Schedule</span>
             </h1>
             <p className="text-xl text-white/80">
-              Inspiring programs throughout the day featuring gospel music and teaching
+              News, talk shows, culture and community programs — live from 48 Siaka Stevens Street, Freetown
             </p>
           </div>
         </div>
@@ -152,7 +152,7 @@ export default function ProgramsPage() {
                     </div>
                     <h3 className="text-xl font-bold mb-3">{program.name}</h3>
                     <p className="text-muted-foreground mb-4">
-                      {program.description || 'Tune in for inspiring content and uplifting music.'}
+                      {program.description || 'Tune in live on 104.3 FM Ecko Media.'}
                     </p>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Mic2 className="w-4 h-4" />

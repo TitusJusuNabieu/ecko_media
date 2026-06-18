@@ -125,7 +125,7 @@ export default function StationsPage() {
       slug: '',
       description: '',
       stream_url: '',
-      genre: 'Gospel',
+      genre: 'News & Talk',
       language: 'English',
       country: 'Sierra Leone',
       is_active: true,
@@ -349,7 +349,7 @@ export default function StationsPage() {
                       <Input
                         value={formData.genre}
                         onChange={(e) => setFormData({ ...formData, genre: e.target.value })}
-                        placeholder="Gospel"
+                        placeholder="News & Talk"
                         required
                       />
                     </div>
